@@ -7,7 +7,7 @@ import {
 	ResolvedConfig,
 } from "vite"
 
-import { shortHash } from "./_shared.js"
+import { shortHash } from "./shared/shortHash.js"
 
 export type Options = {
 	include?: string | string[]

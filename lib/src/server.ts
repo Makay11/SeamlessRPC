@@ -3,11 +3,11 @@ import { resolve } from "node:path"
 import { globStream } from "glob"
 import { z } from "zod"
 
-import { shortHash } from "./_shared.js"
 import {
 	InvalidRequestBodyError,
 	UnknownProcedureError,
 } from "./server/errors.js"
+import { shortHash } from "./shared/shortHash.js"
 
 export * from "./server/errors.js"
 export * from "./server/state.js"
