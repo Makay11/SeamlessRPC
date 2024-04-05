@@ -1,6 +1,7 @@
 import { EventSourceParserStream } from "eventsource-parser/stream"
+import { JsonValue } from "type-fest"
 
-import { Observable } from "./observable.js"
+import { eventStream } from "./shared/eventStream.js"
 
 declare const __MAKAY_RPC_SSE__: boolean
 
@@ -44,7 +45,7 @@ export function rpc(proc: string) {
 				throw new Error("SSE support is not enabled.")
 			}
 
-			return new Observable((emit) => {
+			return eventStream((emit) => {
 				const abortController = new AbortController()
 
 				response
@@ -55,7 +56,7 @@ export function rpc(proc: string) {
 							write({ event, data }) {
 								if (event === "open") return
 
-								emit(JSON.parse(data))
+								emit(JSON.parse(data) as JsonValue)
 							},
 						}),
 						{ signal: abortController.signal },

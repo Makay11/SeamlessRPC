@@ -2,7 +2,6 @@ import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
 import type { MiddlewareHandler } from "hono/types"
 
-import { Observable } from "./observable.js"
 import {
 	createRpc as _createRpc,
 	defineState,
@@ -47,24 +46,29 @@ export async function createRpc({
 		try {
 			const result = await rpc(body)
 
-			if (result instanceof Observable) {
+			if (result instanceof ReadableStream) {
 				return streamSSE(ctx, async (stream) => {
+					stream.onAbort(() => result.cancel())
+
 					await stream.writeSSE({
 						event: "open",
 						data: "",
 					})
 
-					const unsubscribe = result.subscribe((event: unknown) => {
-						stream
-							.writeSSE({
-								data: JSON.stringify(event),
-							})
-							.catch((error: unknown) => {
-								console.error(error)
-							})
-					})
+					const reader = (result as ReadableStream<unknown>).getReader()
 
-					stream.onAbort(unsubscribe)
+					for (let done, value; ; ) {
+						;({ done, value } = await reader.read())
+
+						if (done) {
+							await stream.close()
+							break
+						}
+
+						await stream.writeSSE({
+							data: JSON.stringify(value),
+						})
+					}
 				})
 			}
 
@@ -80,11 +84,13 @@ export async function createRpc({
 			}
 
 			if (error instanceof UnauthorizedError) {
-				return ctx.json(error, 401)
+				// cast to unknown to avoid TS error "Type instantiation is excessively deep and possibly infinite."
+				return ctx.json(error as unknown, 401)
 			}
 
 			if (error instanceof ForbiddenError) {
-				return ctx.json(error, 403)
+				// cast to unknown to avoid TS error "Type instantiation is excessively deep and possibly infinite."
+				return ctx.json(error as unknown, 403)
 			}
 
 			throw error

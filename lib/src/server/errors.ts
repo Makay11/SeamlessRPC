@@ -1,7 +1,7 @@
-import { JSONValue } from "hono/utils/types"
+import { JsonValue } from "type-fest"
 
 export class RpcError extends Error {
-	toJSON(): JSONValue {
+	toJSON(): JsonValue {
 		return this.message
 	}
 }
@@ -19,9 +19,9 @@ export class UnknownProcedureError extends RpcError {
 }
 
 export class ValidationError extends RpcError {
-	error: JSONValue
+	error: JsonValue | undefined
 
-	constructor(error?: JSONValue) {
+	constructor(error?: JsonValue) {
 		super("Validation error")
 
 		this.error = error

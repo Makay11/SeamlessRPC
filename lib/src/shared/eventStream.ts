@@ -1,10 +1,12 @@
-type Setup<T> = (emit: Emit<T>) => Cleanup
+import { JsonValue } from "type-fest"
 
-type Emit<T> = (value: T) => void
+export type Setup<T> = (emit: Emit<T>) => Cleanup
 
-type Cleanup = () => void
+export type Emit<T> = (value: T) => void
 
-function eventStream<T extends JsonValue>(setup: Setup<T>) {
+export type Cleanup = () => void
+
+export function eventStream<T extends JsonValue>(setup: Setup<T>) {
 	let cleanup: Cleanup
 
 	return new ReadableStream<T>({
@@ -18,31 +20,3 @@ function eventStream<T extends JsonValue>(setup: Setup<T>) {
 		},
 	})
 }
-
-let interval: ReturnType<typeof setInterval> | undefined
-
-const stream = eventStream<number>((emit) => {
-	let i = 0
-
-	interval = setInterval(() => {
-		emit(i++)
-	}, 1000)
-
-	return () => {
-		clearInterval(interval)
-	}
-})
-
-setTimeout(async () => {
-	const reader = stream.getReader()
-
-	setTimeout(() => {
-		reader.cancel()
-	}, 3000)
-
-	for (let result; (result = await reader.read()); ) {
-		if (result.done) break
-
-		console.log("received", result.value)
-	}
-}, 5000)
