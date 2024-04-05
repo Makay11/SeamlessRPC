@@ -48,14 +48,14 @@ export async function createRpc({
 
 			if (result instanceof ReadableStream) {
 				return streamSSE(ctx, async (stream) => {
-					stream.onAbort(() => result.cancel())
+					const reader = (result as ReadableStream<unknown>).getReader()
+
+					stream.onAbort(() => reader.cancel())
 
 					await stream.writeSSE({
 						event: "open",
 						data: "",
 					})
-
-					const reader = (result as ReadableStream<unknown>).getReader()
 
 					for (;;) {
 						const { done, value } = await reader.read()
