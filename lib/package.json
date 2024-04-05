@@ -43,10 +43,6 @@
 			"types": "./dist/hono.d.ts",
 			"import": "./dist/hono.js"
 		},
-		"./observable": {
-			"types": "./dist/observable.d.ts",
-			"import": "./dist/observable.js"
-		},
 		"./result": {
 			"types": "./dist/result.d.ts",
 			"import": "./dist/result.js"

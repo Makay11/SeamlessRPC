@@ -1,6 +1,6 @@
 import EventEmitter from "node:events"
 
-import { Observable } from "@makay/rpc/observable"
+import { eventStream } from "@makay/rpc/server"
 import { z, zv } from "@makay/rpc/zod"
 
 import {
@@ -71,7 +71,7 @@ export async function createMessage(text: Text) {
 export async function useMessageCreatedEvents() {
 	await useUserOrThrow()
 
-	return new Observable<Message>((emit) => {
+	return eventStream<Message>((emit) => {
 		ee.on("MESSAGE_CREATED", emit)
 
 		return () => {

@@ -49,9 +49,15 @@ watchEffect(async () => {
 
 	const messageCreatedEvents = await useMessageCreatedEvents()
 
-	unsubscribe = messageCreatedEvents.subscribe((message) => {
-		messages.value.push(message)
-	})
+	const reader = messageCreatedEvents.getReader()
+
+	for (;;) {
+		const { done, value } = await reader.read()
+
+		if (done) break
+
+		messages.value.push(value)
+	}
 })
 
 const newMessageText = ref("")

@@ -57,8 +57,8 @@ export async function createRpc({
 
 					const reader = (result as ReadableStream<unknown>).getReader()
 
-					for (let done, value; ; ) {
-						;({ done, value } = await reader.read())
+					for (;;) {
+						const { done, value } = await reader.read()
 
 						if (done) {
 							await stream.close()

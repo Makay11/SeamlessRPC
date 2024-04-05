@@ -11,6 +11,7 @@ import { shortHash } from "./shared/shortHash.js"
 
 export * from "./server/errors.js"
 export * from "./server/state.js"
+export * from "./shared/eventStream.js"
 
 export type Options = {
 	patterns?: string | string[]
