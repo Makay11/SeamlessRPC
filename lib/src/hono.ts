@@ -48,7 +48,7 @@ export async function createRpc({
 
 			if (result instanceof ReadableStream) {
 				return streamSSE(ctx, async (stream) => {
-					const reader = (result as ReadableStream<unknown>).getReader()
+					const reader = result.getReader()
 
 					stream.onAbort(() => reader.cancel())
 
@@ -72,6 +72,7 @@ export async function createRpc({
 				})
 			}
 
+			// @ts-expect-error Type instantiation is excessively deep and possibly infinite.
 			return ctx.json(result)
 		} catch (error) {
 			if (onError != null) {
@@ -79,18 +80,15 @@ export async function createRpc({
 			}
 
 			if (error instanceof ValidationError) {
-				// cast to unknown to avoid TS error "Type instantiation is excessively deep and possibly infinite."
-				return ctx.json(error as unknown, 400)
+				return ctx.json(error, 400)
 			}
 
 			if (error instanceof UnauthorizedError) {
-				// cast to unknown to avoid TS error "Type instantiation is excessively deep and possibly infinite."
-				return ctx.json(error as unknown, 401)
+				return ctx.json(error, 401)
 			}
 
 			if (error instanceof ForbiddenError) {
-				// cast to unknown to avoid TS error "Type instantiation is excessively deep and possibly infinite."
-				return ctx.json(error as unknown, 403)
+				return ctx.json(error, 403)
 			}
 
 			throw error

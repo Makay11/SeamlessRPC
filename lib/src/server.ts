@@ -1,6 +1,7 @@
 import { resolve } from "node:path"
 
 import { globStream } from "glob"
+import { JsonValue } from "type-fest"
 import { z } from "zod"
 
 import {
@@ -17,7 +18,9 @@ export type Options = {
 	patterns?: string | string[]
 }
 
-export type Procedure = (...args: unknown[]) => Promise<unknown>
+export type Procedure = (
+	...args: unknown[]
+) => Promise<JsonValue | ReadableStream<JsonValue>>
 
 export const RequestBodySchema = z.tuple([z.string()]).rest(z.unknown())
 
