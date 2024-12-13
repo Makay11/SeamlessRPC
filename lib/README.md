@@ -94,7 +94,7 @@ Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https
    app.use(
      "/rpc",
      cors({ origin: "http://localhost:5173", credentials: true }),
-     await createRpc()
+     await createRpc(),
    )
 
    serve(app, (info) => {
@@ -254,7 +254,7 @@ When using the [Hono](https://hono.dev/) adapter, for instance, the code above w
    app.use(
      "/rpc",
      cors({ origin: "http://localhost:5173", credentials: true }),
-     rpc
+     rpc,
    )
 
    serve(app, (info) => {
