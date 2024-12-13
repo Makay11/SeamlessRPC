@@ -14,10 +14,7 @@
 	"license": "MPL-2.0",
 	"author": "Diogo Pais",
 	"repository": "github:Makay11/rpc",
-	"engines": {
-		"node": ">=20"
-	},
-	"packageManager": "pnpm@9.7.1",
+	"packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
 	"scripts": {
 		"dev": "tsc -p tsconfig.lib.json --watch",
 		"lint": "eslint . --ext .js,.cjs,.mjs,.ts,.cts,.mts --max-warnings 0",
@@ -69,9 +66,9 @@
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
-		"@tsconfig/node20": "^20.1.4",
+		"@tsconfig/node22": "^22.0.0",
 		"@tsconfig/strictest": "^2.0.5",
-		"@types/node": "^20.16.1",
+		"@types/node": "^22.10.2",
 		"@typescript-eslint/eslint-plugin": "^7.18.0",
 		"@typescript-eslint/parser": "^7.18.0",
 		"eslint": "^8.57.0",
