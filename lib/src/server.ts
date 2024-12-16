@@ -1,9 +1,8 @@
-import type { JsonValue } from "type-fest"
-
 import { resolve } from "node:path"
 import process from "node:process"
 
 import { globStream } from "glob"
+import type { JsonValue } from "type-fest"
 import { z } from "zod"
 
 import {

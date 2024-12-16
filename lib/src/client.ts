@@ -1,6 +1,5 @@
-import type { JsonValue } from "type-fest"
-
 import { EventSourceParserStream } from "eventsource-parser/stream"
+import type { JsonValue } from "type-fest"
 
 import { eventStream } from "./shared/eventStream.js"
 

@@ -1,7 +1,6 @@
 import type { Context } from "hono"
-import type { MiddlewareHandler } from "hono/types"
-
 import { streamSSE } from "hono/streaming"
+import type { MiddlewareHandler } from "hono/types"
 
 import {
 	createRpc as _createRpc,
