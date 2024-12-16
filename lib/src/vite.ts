@@ -4,7 +4,7 @@ import {
 	createFilter,
 	parseAstAsync,
 	type PluginOption,
-	ResolvedConfig,
+	type ResolvedConfig,
 } from "vite"
 
 import { shortHash } from "./shared/shortHash.js"

@@ -1,4 +1,4 @@
-import { JsonValue } from "type-fest"
+import type { JsonValue } from "type-fest"
 
 export class RpcError extends Error {
 	toJSON(): JsonValue {

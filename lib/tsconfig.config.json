@@ -1,9 +1,11 @@
 {
 	"extends": ["./tsconfig.lib.json"],
 
-	"include": ["src/**/*.ts", ".eslintrc.cjs"],
-
 	"compilerOptions": {
+		"declaration": false,
+		"declarationMap": false,
 		"noEmit": true
-	}
+	},
+
+	"include": ["src/**/*.ts", "eslint.config.js"]
 }

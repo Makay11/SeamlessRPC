@@ -1,5 +1,6 @@
+import type { JsonValue } from "type-fest"
+
 import { EventSourceParserStream } from "eventsource-parser/stream"
-import { JsonValue } from "type-fest"
 
 import { eventStream } from "./shared/eventStream.js"
 
@@ -81,6 +82,7 @@ export function rpc(proc: string) {
 			})
 		}
 
+		// eslint-disable-next-line ts/no-unsafe-return
 		return response.json()
 	}
 }

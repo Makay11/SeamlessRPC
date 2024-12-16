@@ -1,7 +1,9 @@
+import type { JsonValue } from "type-fest"
+
 import { resolve } from "node:path"
+import process from "node:process"
 
 import { globStream } from "glob"
-import { JsonValue } from "type-fest"
 import { z } from "zod"
 
 import {
@@ -43,7 +45,7 @@ export async function createRpc({
 		}
 	}
 
-	return (body: unknown) => {
+	return async (body: unknown) => {
 		const bodyResult = RequestBodySchema.safeParse(body)
 
 		if (!bodyResult.success) {

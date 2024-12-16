@@ -1,6 +1,7 @@
 import type { Context } from "hono"
-import { streamSSE } from "hono/streaming"
 import type { MiddlewareHandler } from "hono/types"
+
+import { streamSSE } from "hono/streaming"
 
 import {
 	createRpc as _createRpc,
@@ -50,7 +51,7 @@ export async function createRpc({
 				return streamSSE(ctx, async (stream) => {
 					const reader = result.getReader()
 
-					stream.onAbort(() => reader.cancel())
+					stream.onAbort(async () => reader.cancel())
 
 					await stream.writeSSE({
 						event: "open",
@@ -76,10 +77,11 @@ export async function createRpc({
 			return ctx.json(result)
 		} catch (error) {
 			if (onError != null) {
-				return await onError(ctx, error)
+				return onError(ctx, error)
 			}
 
 			if (error instanceof ValidationError) {
+				// @ts-expect-error Type instantiation is excessively deep and possibly infinite.
 				return ctx.json(error, 400)
 			}
 

@@ -4,13 +4,12 @@
 		"@tsconfig/strictest/tsconfig.json"
 	],
 
-	"include": ["src/**/*.ts"],
-
 	"compilerOptions": {
+		"lib": ["DOM"],
 		"declaration": true,
 		"declarationMap": true,
-		"outDir": "dist",
+		"outDir": "dist"
+	},
 
-		"lib": ["DOM"]
-	}
+	"include": ["src/**/*.ts"]
 }
