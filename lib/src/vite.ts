@@ -47,7 +47,7 @@ export function rpc({
 			config = _config
 
 			createExport =
-				hashProcedures ?? config.mode === "production"
+				(hashProcedures ?? config.mode === "production")
 					? (path, name) =>
 							`export const ${name} = rpc("${shortHash(`${path}:${name}`)}")`
 					: (path, name) => `export const ${name} = rpc("${path}:${name}")`
