@@ -1,7 +1,7 @@
 import { resolve } from "node:path"
 import process from "node:process"
 
-import { globStream } from "glob"
+import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
 import { z } from "zod"
 
@@ -30,7 +30,9 @@ export async function createRpc({
 }: Options = {}) {
 	const proceduresMap = new Map<string, Procedure>()
 
-	for await (const path of globStream(patterns)) {
+	const paths = await glob(patterns)
+
+	for (const path of paths) {
 		const absolutePath = resolve(process.cwd(), path)
 
 		const module = (await import(absolutePath)) as Record<string, Procedure>
