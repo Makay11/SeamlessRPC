@@ -1,12 +1,7 @@
 {
 	"name": "@makay/rpc",
-	"type": "module",
 	"version": "0.4.0",
-	"packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
 	"description": "An RPC library for quick development of seamless full-stack applications.",
-	"author": "Diogo Pais",
-	"license": "MPL-2.0",
-	"repository": "github:Makay11/rpc",
 	"keywords": [
 		"typescript",
 		"rpc",
@@ -15,6 +10,13 @@
 		"real-time",
 		"subscriptions"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Makay11/rpc.git"
+	},
+	"license": "MPL-2.0",
+	"author": "Diogo Pais",
+	"type": "module",
 	"exports": {
 		"./client": {
 			"types": "./dist/client.d.ts",
@@ -69,10 +71,12 @@
 		"@tsconfig/strictest": "^2.0.5",
 		"@types/node": "^22.10.2",
 		"eslint": "^9.16.0",
+		"eslint-plugin-package-json": "^0.18.0",
 		"prettier": "^3.4.2",
 		"publint": "^0.2.12",
 		"typescript": "~5.7.2"
 	},
+	"packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
 	"pnpm": {
 		"overrides": {
 			"is-core-module": "npm:@nolyfill/is-core-module@^1"
