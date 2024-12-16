@@ -74,6 +74,6 @@
 		"eslint-plugin-simple-import-sort": "^12.1.1",
 		"prettier": "^3.4.2",
 		"publint": "^0.2.12",
-		"typescript": "~5.4.5"
+		"typescript": "~5.7.2"
 	}
 }
