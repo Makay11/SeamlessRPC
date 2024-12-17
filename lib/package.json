@@ -49,7 +49,7 @@
 	"scripts": {
 		"dev": "tsc -p tsconfig.lib.json --watch",
 		"validate": "pnpm lint && knip && pnpm format:check",
-		"lint": "eslint --cache --max-warnings=0",
+		"lint": "eslint --max-warnings=0",
 		"lint:fix": "pnpm lint --fix",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
