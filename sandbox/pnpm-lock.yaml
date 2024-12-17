@@ -13,7 +13,7 @@ importers:
         version: 1.13.7(hono@4.6.14)
       '@makay/rpc':
         specifier: file:../lib
-        version: file:../lib(hono@4.6.14)(vite@6.0.3(@types/node@22.10.2)(tsx@4.19.2))
+        version: file:../lib(hono@4.6.14)(vite@6.0.3(@types/node@22.10.2)(tsx@4.19.2))(zod@3.24.1)
       '@vueuse/core':
         specifier: ^12.0.0
         version: 12.0.0(typescript@5.7.2)
@@ -26,6 +26,9 @@ importers:
       vue:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.7.2)
+      zod:
+        specifier: ^3.24.1
+        version: 3.24.1
     devDependencies:
       '@tsconfig/node22':
         specifier: ^22.0.0
@@ -860,6 +863,9 @@ packages:
       typescript:
         optional: true
 
+  zod@3.24.1:
+    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
+
 snapshots:
 
   '@antfu/utils@0.7.10': {}
@@ -1027,7 +1033,7 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
-  '@makay/rpc@file:../lib(hono@4.6.14)(vite@6.0.3(@types/node@22.10.2)(tsx@4.19.2))':
+  '@makay/rpc@file:../lib(hono@4.6.14)(vite@6.0.3(@types/node@22.10.2)(tsx@4.19.2))(zod@3.24.1)':
     dependencies:
       eventsource-parser: 3.0.0
       tinyglobby: 0.2.10
@@ -1035,6 +1041,7 @@ snapshots:
       vite: 6.0.3(@types/node@22.10.2)(tsx@4.19.2)
     optionalDependencies:
       hono: 4.6.14
+      zod: 3.24.1
 
   '@polka/url@1.0.0-next.28': {}
 
@@ -1498,3 +1505,5 @@ snapshots:
       '@vue/shared': 3.5.13
     optionalDependencies:
       typescript: 5.7.2
+
+  zod@3.24.1: {}
