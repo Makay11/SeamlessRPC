@@ -16,11 +16,11 @@ export * from "./server/state.js"
 export * from "./shared/eventStream.js"
 
 export type Options = {
-	patterns?: string | string[]
+	patterns?: string | Array<string>
 }
 
 export type Procedure = (
-	...args: unknown[]
+	...args: Array<unknown>
 ) => Promise<JsonValue | ReadableStream<JsonValue>>
 
 export const RequestBodySchema = z.tuple([z.string()]).rest(z.unknown())

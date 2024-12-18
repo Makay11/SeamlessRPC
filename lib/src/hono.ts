@@ -80,7 +80,6 @@ export async function createRpc({
 			}
 
 			if (error instanceof ValidationError) {
-				// @ts-expect-error Type instantiation is excessively deep and possibly infinite.
 				return ctx.json(error, 400)
 			}
 

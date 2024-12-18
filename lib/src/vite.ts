@@ -10,8 +10,8 @@ import {
 import { shortHash } from "./shared/shortHash.js"
 
 export type Options = {
-	include?: string | string[]
-	exclude?: string | string[]
+	include?: string | Array<string>
+	exclude?: string | Array<string>
 	hashProcedures?: boolean
 	sse?: boolean
 }
@@ -85,7 +85,7 @@ export function rpc({
 				return "export {}"
 			}
 
-			const exports: string[] = []
+			const exports: Array<string> = []
 
 			const path = relative(config.root, id)
 

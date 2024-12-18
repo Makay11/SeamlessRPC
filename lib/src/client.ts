@@ -26,7 +26,7 @@ export class RpcClientError extends Error {
 }
 
 export function rpc(proc: string) {
-	return async (...args: unknown[]) => {
+	return async (...args: Array<unknown>) => {
 		const response = await fetch(config.url, {
 			method: "POST",
 			credentials: config.credentials,
@@ -81,7 +81,7 @@ export function rpc(proc: string) {
 			})
 		}
 
-		// eslint-disable-next-line ts/no-unsafe-return
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		return response.json()
 	}
 }
