@@ -19,11 +19,10 @@ export class UnknownProcedureError extends RpcError {
 }
 
 export class ValidationError extends RpcError {
-	error: JsonValue | undefined
+	public error
 
 	constructor(error?: JsonValue) {
 		super("Validation error")
-
 		this.error = error
 	}
 

@@ -10,10 +10,10 @@ import {
 import { shortHash } from "./shared/shortHash.js"
 
 export type Options = {
-	include?: string | Array<string>
-	exclude?: string | Array<string>
-	hashProcedures?: boolean
-	sse?: boolean
+	include?: string | Array<string> | undefined
+	exclude?: string | Array<string> | undefined
+	hashProcedures?: boolean | undefined
+	sse?: boolean | undefined
 }
 
 export function rpc({
@@ -49,8 +49,8 @@ export function rpc({
 			createExport =
 				(hashProcedures ?? config.mode === "production")
 					? (path, name) =>
-							`export const ${name} = rpc("${shortHash(`${path}:${name}`)}")`
-					: (path, name) => `export const ${name} = rpc("${path}:${name}")`
+							`export const ${name} = rpc("${shortHash(`${path}/${name}`)}")`
+					: (path, name) => `export const ${name} = rpc("${path}/${name}")`
 		},
 
 		async transform(code, id) {
