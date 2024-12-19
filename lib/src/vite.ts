@@ -72,7 +72,8 @@ export function rpc({
 				if (node.type === "ExportNamedDeclaration") {
 					if (
 						node.declaration?.type !== "FunctionDeclaration" ||
-						node.declaration.async !== true
+						node.declaration.async !== true ||
+						node.declaration.generator === true
 					) {
 						throw new Error(`All exports must be local plain async functions.`)
 					}
