@@ -1,5 +1,4 @@
 import { resolve } from "node:path"
-import process from "node:process"
 
 import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
@@ -35,7 +34,7 @@ export async function createRpc({
 	})
 
 	for (const path of paths) {
-		const absolutePath = resolve(process.cwd(), rootDir, path)
+		const absolutePath = resolve(rootDir, path)
 
 		const module = (await import(absolutePath)) as Record<string, Procedure>
 
