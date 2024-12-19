@@ -18,7 +18,7 @@ export type Options = {
 }
 
 export type Procedure = (
-	...args: Array<unknown>
+	...args: Array<JsonValue>
 ) => Promise<JsonValue | ReadableStream<JsonValue>>
 
 export async function createRpc({
@@ -50,7 +50,7 @@ export async function createRpc({
 		}
 	}
 
-	return async (args: Array<unknown>) => {
+	return async (procedureId: string, args: Array<JsonValue>) => {
 		const procedure = proceduresMap.get(procedureId)
 
 		if (procedure == null) {
