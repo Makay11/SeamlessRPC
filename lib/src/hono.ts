@@ -1,21 +1,22 @@
 import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
 import type { MiddlewareHandler } from "hono/types"
+import { JsonValue, Promisable } from "type-fest"
 
 import {
 	createRpc as _createRpc,
 	defineState,
 	ForbiddenError,
+	InvalidRequestBodyError,
 	type Options as RpcOptions,
 	UnauthorizedError,
 	ValidationError,
 } from "./server.js"
 
-export type MaybePromise<T> = T | Promise<T>
-
-export type Options = RpcOptions & {
-	onRequest?: (ctx: Context) => MaybePromise<void>
-	onError?: (ctx: Context, error: unknown) => MaybePromise<Response>
+export type Options = {
+	onRequest?: ((ctx: Context) => Promisable<void>) | undefined
+	onError?: ((ctx: Context, error: unknown) => Promisable<Response>) | undefined
+	files?: RpcOptions | undefined
 }
 
 const { createState: createContext, useStateOrThrow: useContext } =
@@ -26,9 +27,9 @@ export { useContext }
 export async function createRpc({
 	onRequest,
 	onError,
-	...options
+	files,
 }: Options = {}): Promise<MiddlewareHandler> {
-	const rpc = await _createRpc(options)
+	const rpc = await _createRpc(files)
 
 	return async (ctx) => {
 		// this forces a new async context to be created before
@@ -41,10 +42,15 @@ export async function createRpc({
 			await onRequest(ctx)
 		}
 
-		const body: unknown = await ctx.req.json()
+		const procedureId = ctx.req.path // TODO figure this out
+		const args = await ctx.req.json<JsonValue>()
+
+		if (!Array.isArray(args)) {
+			throw new InvalidRequestBodyError()
+		}
 
 		try {
-			const result = await rpc(body)
+			const result = await rpc(procedureId, args)
 
 			if (result instanceof ReadableStream) {
 				return streamSSE(ctx, async (stream) => {
