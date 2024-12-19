@@ -3,12 +3,8 @@ import process from "node:process"
 
 import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
-import { z } from "zod"
 
-import {
-	InvalidRequestBodyError,
-	UnknownProcedureError,
-} from "./server/errors.js"
+import { UnknownProcedureError } from "./server/errors.js"
 import { shortHash } from "./shared/shortHash.js"
 
 export * from "./server/errors.js"
@@ -16,45 +12,45 @@ export * from "./server/state.js"
 export * from "./shared/eventStream.js"
 
 export type Options = {
-	patterns?: string | Array<string>
+	rootDir?: string | undefined
+	include?: string | Array<string> | undefined
+	exclude?: string | Array<string> | undefined
 }
 
 export type Procedure = (
 	...args: Array<unknown>
 ) => Promise<JsonValue | ReadableStream<JsonValue>>
 
-export const RequestBodySchema = z.tuple([z.string()]).rest(z.unknown())
-
 export async function createRpc({
-	patterns = "src/**/*.server.ts",
+	rootDir = "src",
+	include = "**/*.server.ts",
+	exclude = [],
 }: Options = {}) {
 	const proceduresMap = new Map<string, Procedure>()
 
-	const paths = await glob(patterns)
+	const paths = await glob({
+		cwd: rootDir,
+		patterns: include,
+		ignore: exclude,
+	})
 
 	for (const path of paths) {
-		const absolutePath = resolve(process.cwd(), path)
+		const absolutePath = resolve(process.cwd(), rootDir, path)
 
 		const module = (await import(absolutePath)) as Record<string, Procedure>
 
-		for (const _export in module) {
-			const procedureId = `${path}:${_export}`
-			const procedure = module[_export]!
+		for (const exportName in module) {
+			const procedure = module[exportName]!
+
+			const procedureId = `${path}/${exportName}`
+			const hashedProcedureId = `${shortHash(path)}/${exportName}`
 
 			proceduresMap.set(procedureId, procedure)
-			proceduresMap.set(shortHash(procedureId), procedure)
+			proceduresMap.set(hashedProcedureId, procedure)
 		}
 	}
 
-	return async (body: unknown) => {
-		const bodyResult = RequestBodySchema.safeParse(body)
-
-		if (!bodyResult.success) {
-			throw new InvalidRequestBodyError()
-		}
-
-		const [procedureId, ...args] = bodyResult.data
-
+	return async (args: Array<unknown>) => {
 		const procedure = proceduresMap.get(procedureId)
 
 		if (procedure == null) {
