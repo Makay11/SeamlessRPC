@@ -12,14 +12,14 @@ import { shortHash } from "./shared/shortHash.js"
 export type Options = {
 	include?: string | Array<string> | undefined
 	exclude?: string | Array<string> | undefined
-	hashProcedures?: boolean | undefined
+	hashPaths?: boolean | undefined
 	sse?: boolean | undefined
 }
 
 export function rpc({
 	include = "src/**/*.server.{js,ts}",
 	exclude,
-	hashProcedures,
+	hashPaths,
 	sse = false,
 }: Options = {}): PluginOption {
 	const filter = createFilter(include, exclude)
@@ -47,9 +47,9 @@ export function rpc({
 			config = _config
 
 			createExport =
-				(hashProcedures ?? config.mode === "production")
+				(hashPaths ?? config.mode === "production")
 					? (path, name) =>
-							`export const ${name} = rpc("${shortHash(`${path}/${name}`)}")`
+							`export const ${name} = rpc("${shortHash(path)}/${name}")`
 					: (path, name) => `export const ${name} = rpc("${path}/${name}")`
 		},
 
