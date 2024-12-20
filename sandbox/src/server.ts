@@ -12,7 +12,7 @@ app.use(
 	})
 )
 
-app.use("/rpc", await createRpc())
+app.all("/rpc/*", await createRpc())
 
 serve(
 	{

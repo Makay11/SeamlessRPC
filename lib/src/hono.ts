@@ -1,6 +1,6 @@
 import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
-import type { MiddlewareHandler } from "hono/types"
+import type { Handler } from "hono/types"
 import { JsonValue, Promisable } from "type-fest"
 
 import {
@@ -29,7 +29,7 @@ export async function createRpc({
 	onRequest,
 	onError,
 	files,
-}: Options = {}): Promise<MiddlewareHandler> {
+}: Options = {}): Promise<Handler> {
 	const rpc = await _createRpc(files)
 
 	return async (ctx) => {
