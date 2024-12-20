@@ -4,6 +4,11 @@ import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
 
 import { UnknownProcedureError } from "./server/errors.js"
+import {
+	DEFAULT_EXCLUDE,
+	DEFAULT_INCLUDE,
+	DEFAULT_ROOT_DIR,
+} from "./shared/defaults.js"
 import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
 
 export * from "./server/errors.js"
@@ -21,9 +26,9 @@ export type Procedure = (
 ) => Promise<JsonValue | ReadableStream<JsonValue>>
 
 export async function createRpc({
-	rootDir = "src",
-	include = "**/*.server.{js,ts}",
-	exclude = [],
+	rootDir = DEFAULT_ROOT_DIR,
+	include = DEFAULT_INCLUDE,
+	exclude = DEFAULT_EXCLUDE,
 }: Options = {}) {
 	const proceduresMap = new Map<string, Procedure>()
 

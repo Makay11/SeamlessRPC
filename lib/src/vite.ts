@@ -7,6 +7,11 @@ import {
 	type ResolvedConfig,
 } from "vite"
 
+import {
+	DEFAULT_EXCLUDE,
+	DEFAULT_INCLUDE,
+	DEFAULT_ROOT_DIR,
+} from "./shared/defaults.js"
 import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
 
 export type Options = {
@@ -18,17 +23,12 @@ export type Options = {
 }
 
 export function rpc({
-	rootDir = "src",
-	include = "**/*.server.{js,ts}",
-	exclude,
+	rootDir = DEFAULT_ROOT_DIR,
+	include = DEFAULT_INCLUDE,
+	exclude = DEFAULT_EXCLUDE,
 	hashPaths,
 	sse = false,
 }: Options = {}): PluginOption {
-	// TODO compute the resolve path based on config.root
-	const filter = createFilter(include, exclude, {
-		resolve: rootDir,
-	})
-
 	let config: ResolvedConfig
 
 	const _import = 'import { rpc } from "@makay/rpc/client"'
@@ -41,6 +41,8 @@ export function rpc({
 		return (path, name) =>
 			`export const ${name} = rpc("${transformer(path, name)}")`
 	}
+
+	let filter: (id: string) => boolean
 
 	return {
 		name: "@makay/rpc",
@@ -58,6 +60,11 @@ export function rpc({
 			createExport = createExportFactory(
 				hashPaths ?? config.mode === "production",
 			)
+
+			// TODO compute the resolve path based on config.root
+			filter = createFilter(include, exclude, {
+				resolve: rootDir,
+			})
 		},
 
 		async transform(code, id) {
