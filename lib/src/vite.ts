@@ -1,11 +1,6 @@
-import { relative } from "node:path"
+import { relative, resolve } from "node:path"
 
-import {
-	createFilter,
-	parseAstAsync,
-	type PluginOption,
-	type ResolvedConfig,
-} from "vite"
+import { createFilter, parseAstAsync, type PluginOption } from "vite"
 
 import {
 	DEFAULT_EXCLUDE,
@@ -29,20 +24,24 @@ export function rpc({
 	hashPaths,
 	sse = false,
 }: Options = {}): PluginOption {
-	let config: ResolvedConfig
+	let filter: (id: string) => boolean
 
 	const _import = 'import { rpc } from "@makay/rpc/client"'
 
-	let createExport: (path: string, name: string) => string
+	let createExport: (id: string, name: string) => string
 
-	function createExportFactory(hashPaths: boolean): typeof createExport {
+	function createExportFactory(
+		rootPath: string,
+		hashPaths: boolean,
+	): typeof createExport {
 		const transformer = hashPaths ? getHashedProcedureId : getProcedureId
 
-		return (path, name) =>
-			`export const ${name} = rpc("${transformer(path, name)}")`
-	}
+		return (id, name) => {
+			const path = relative(rootPath, id)
 
-	let filter: (id: string) => boolean
+			return `export const ${name} = rpc("${transformer(path, name)}")`
+		}
+	}
 
 	return {
 		name: "@makay/rpc",
@@ -54,17 +53,17 @@ export function rpc({
 			}
 		},
 
-		configResolved(_config) {
-			config = _config
+		configResolved(config) {
+			const rootPath = resolve(config.root, rootDir)
+
+			filter = createFilter(include, exclude, {
+				resolve: rootPath,
+			})
 
 			createExport = createExportFactory(
+				rootPath,
 				hashPaths ?? config.mode === "production",
 			)
-
-			// TODO compute the resolve path based on config.root
-			filter = createFilter(include, exclude, {
-				resolve: rootDir,
-			})
 		},
 
 		async transform(code, id) {
@@ -102,12 +101,8 @@ export function rpc({
 
 			const exports: Array<string> = []
 
-			console.log(config.root, id)
-
-			const path = relative(config.root, id)
-
 			for (const procedure of procedures) {
-				exports.push(createExport(path, procedure))
+				exports.push(createExport(id, procedure))
 			}
 
 			return `${_import}\n${exports.join("\n")}\n`
