@@ -7,9 +7,11 @@ import {
 	createRpc as _createRpc,
 	defineState,
 	ForbiddenError,
+	getHttpStatusCode,
 	InvalidRequestBodyError,
 	type Options as RpcOptions,
 	ProcedureNotFoundError,
+	RpcError,
 	UnauthorizedError,
 	ValidationError,
 } from "./server.js"
@@ -88,23 +90,8 @@ export async function createRpc({
 				return onError(ctx, error)
 			}
 
-			if (
-				error instanceof InvalidRequestBodyError ||
-				error instanceof ValidationError
-			) {
-				return ctx.json(error, 400)
-			}
-
-			if (error instanceof UnauthorizedError) {
-				return ctx.json(error, 401)
-			}
-
-			if (error instanceof ForbiddenError) {
-				return ctx.json(error, 403)
-			}
-
-			if (error instanceof ProcedureNotFoundError) {
-				return ctx.json(error, 404)
+			if (error instanceof RpcError) {
+				return ctx.json(error, getHttpStatusCode(error))
 			}
 
 			throw error

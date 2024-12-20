@@ -42,3 +42,26 @@ export class ProcedureNotFoundError extends RpcError {
 		super("Procedure not found")
 	}
 }
+
+export function getHttpStatusCode(error: RpcError) {
+	if (
+		error instanceof InvalidRequestBodyError ||
+		error instanceof ValidationError
+	) {
+		return 400
+	}
+
+	if (error instanceof UnauthorizedError) {
+		return 401
+	}
+
+	if (error instanceof ForbiddenError) {
+		return 403
+	}
+
+	if (error instanceof ProcedureNotFoundError) {
+		return 404
+	}
+
+	return 500
+}
