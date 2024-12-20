@@ -6,14 +6,10 @@ import { JsonValue, Promisable } from "type-fest"
 import {
 	createRpc as _createRpc,
 	defineState,
-	ForbiddenError,
 	getHttpStatusCode,
 	InvalidRequestBodyError,
 	type Options as RpcOptions,
-	ProcedureNotFoundError,
 	RpcError,
-	UnauthorizedError,
-	ValidationError,
 } from "./server.js"
 
 export type Options = {
@@ -27,14 +23,17 @@ const { createState: createContext, useStateOrThrow: useContext } =
 
 export { useContext }
 
-export async function createRpc({
-	onRequest,
-	onError,
-	files,
-}: Options = {}): Promise<Handler> {
+export async function createRpc(
+	basePath: string,
+	{ onRequest, onError, files }: Options = {},
+): Promise<Handler> {
 	const rpc = await _createRpc(files)
 
 	return async (ctx) => {
+		if (!ctx.req.path.startsWith(basePath)) return
+
+		const path = ctx.req.path.slice(basePath.length + 1)
+
 		try {
 			// this forces a new async context to be created before
 			// we call `createContext` to avoid context collisions

@@ -15,7 +15,7 @@ app.use(
 	})
 )
 
-app.post("/rpc/*", await createRpc())
+app.post(await createRpc("/rpc"))
 
 serve(
 	{
