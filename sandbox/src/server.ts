@@ -7,10 +7,19 @@ const app = new Hono()
 
 app.use(
 	"/rpc",
-	cors({ origin: "http://localhost:5173", credentials: true }),
+	cors({
+		origin: "http://localhost:5173",
+		credentials: true,
+	}),
 	await createRpc()
 )
 
-serve(app, (info) => {
-	console.log(`Server is running on http://localhost:${info.port}`)
-})
+serve(
+	{
+		fetch: app.fetch,
+		port: 3000,
+	},
+	(info) => {
+		console.log(`Server is running on http://localhost:${info.port}`)
+	}
+)
