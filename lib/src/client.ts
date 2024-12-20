@@ -25,14 +25,14 @@ export class RpcClientError extends Error {
 }
 
 export function rpc(procedureId: string) {
-	return async (...args: Array<unknown>) => {
-		const response = await fetch(config.url, {
+	return async (...args: Array<JsonValue>) => {
+		const response = await fetch(`${config.url}/${procedureId}`, {
 			method: "POST",
 			credentials: config.credentials,
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify([procedureId, ...args]),
+			body: JSON.stringify(args),
 		})
 
 		if (!response.ok) {
@@ -80,7 +80,6 @@ export function rpc(procedureId: string) {
 			})
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-		return response.json()
+		return response.json() as Promise<JsonValue>
 	}
 }

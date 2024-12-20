@@ -12,8 +12,8 @@ importers:
         specifier: ^1.13.7
         version: 1.13.7(hono@4.6.14)
       '@makay/rpc':
-        specifier: file:../lib
-        version: file:../lib(hono@4.6.14)(vite@6.0.3(@types/node@22.10.2)(tsx@4.19.2))(zod@3.24.1)
+        specifier: link:../lib
+        version: link:../lib
       '@vueuse/core':
         specifier: ^12.0.0
         version: 12.0.0(typescript@5.7.2)
@@ -377,18 +377,6 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
-  '@makay/rpc@file:../lib':
-    resolution: {directory: ../lib, type: directory}
-    peerDependencies:
-      hono: ^4.6.14
-      vite: ^6.0.3
-      zod: ^3.24.1
-    peerDependenciesMeta:
-      hono:
-        optional: true
-      zod:
-        optional: true
-
   '@polka/url@1.0.0-next.28':
     resolution: {integrity: sha512-8LduaNlMZGwdZ6qWrKlfa+2M4gahzFkprZiAt2TF8uS0qQgBizKXpXURqvTJ4WtmupWxaLqjRb2UCTe72mu+Aw==}
 
@@ -647,18 +635,6 @@ packages:
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
 
-  eventsource-parser@3.0.0:
-    resolution: {integrity: sha512-T1C0XCUimhxVQzW4zFipdx0SficT651NnkR0ZSH3yQwh+mFMdLfgjABVi4YtMTtaL4s168593DaoaRLMqryavA==}
-    engines: {node: '>=18.0.0'}
-
-  fdir@6.4.2:
-    resolution: {integrity: sha512-KnhMXsKSPZlAhp7+IjUkRZKPb4fUyccpDrdFXbi4QL1qkmFh9kVY09Yox+n4MaOb3lHZ1Tv829C3oaaXoMYPDQ==}
-    peerDependencies:
-      picomatch: ^3 || ^4
-    peerDependenciesMeta:
-      picomatch:
-        optional: true
-
   fs-extra@11.2.0:
     resolution: {integrity: sha512-PmDi3uwK5nFuXh7XDTlVnS17xJS7vW36is2+w3xcv8SVxiB4NyATf4ctkVY5bkSjX0Y4nbvZCq1/EjtEyr9ktw==}
     engines: {node: '>=14.14'}
@@ -767,10 +743,6 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  tinyglobby@0.2.10:
-    resolution: {integrity: sha512-Zc+8eJlFMvgatPZTl6A9L/yht8QqdmUNtURHaKZLmKBE12hNPSrqNkUp2cs3M/UKmNVVAMFQYSjYIVHDjW5zew==}
-    engines: {node: '>=12.0.0'}
-
   totalist@3.0.1:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
@@ -779,10 +751,6 @@ packages:
     resolution: {integrity: sha512-pOUl6Vo2LUq/bSa8S5q7b91cgNSjctn9ugq/+Mvow99qW6x/UZYwzxy/3NmqoT66eHYfCVvFvACC58UBPFf28g==}
     engines: {node: '>=18.0.0'}
     hasBin: true
-
-  type-fest@4.30.2:
-    resolution: {integrity: sha512-UJShLPYi1aWqCdq9HycOL/gwsuqda1OISdBO3t8RlXQC4QvtuIz4b5FCfe2dQIWEpmlRExKmcTBfP1r9bhY7ig==}
-    engines: {node: '>=16'}
 
   typescript@5.7.2:
     resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
@@ -1032,16 +1000,6 @@ snapshots:
       hono: 4.6.14
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
-
-  '@makay/rpc@file:../lib(hono@4.6.14)(vite@6.0.3(@types/node@22.10.2)(tsx@4.19.2))(zod@3.24.1)':
-    dependencies:
-      eventsource-parser: 3.0.0
-      tinyglobby: 0.2.10
-      type-fest: 4.30.2
-      vite: 6.0.3(@types/node@22.10.2)(tsx@4.19.2)
-    optionalDependencies:
-      hono: 4.6.14
-      zod: 3.24.1
 
   '@polka/url@1.0.0-next.28': {}
 
@@ -1322,12 +1280,6 @@ snapshots:
 
   estree-walker@2.0.2: {}
 
-  eventsource-parser@3.0.0: {}
-
-  fdir@6.4.2(picomatch@4.0.2):
-    optionalDependencies:
-      picomatch: 4.0.2
-
   fs-extra@11.2.0:
     dependencies:
       graceful-fs: 4.2.11
@@ -1439,11 +1391,6 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  tinyglobby@0.2.10:
-    dependencies:
-      fdir: 6.4.2(picomatch@4.0.2)
-      picomatch: 4.0.2
-
   totalist@3.0.1: {}
 
   tsx@4.19.2:
@@ -1452,8 +1399,6 @@ snapshots:
       get-tsconfig: 4.8.1
     optionalDependencies:
       fsevents: 2.3.3
-
-  type-fest@4.30.2: {}
 
   typescript@5.7.2: {}
 
