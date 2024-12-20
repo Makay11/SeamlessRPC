@@ -6,13 +6,13 @@ import { cors } from "hono/cors"
 const app = new Hono()
 
 app.use(
-	"/rpc/*",
 	cors({
 		origin: "http://localhost:5173",
 		credentials: true,
-	}),
-	await createRpc()
+	})
 )
+
+app.use("/rpc", await createRpc())
 
 serve(
 	{

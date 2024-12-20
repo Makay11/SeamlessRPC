@@ -47,6 +47,8 @@ export async function createRpc({
 			const procedureId = ctx.req.path // TODO figure this out
 			const args = await ctx.req.json<JsonValue>()
 
+			console.log(procedureId)
+
 			if (!Array.isArray(args)) {
 				throw new InvalidRequestBodyError()
 			}
