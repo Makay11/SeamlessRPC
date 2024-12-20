@@ -4,7 +4,7 @@ import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
 
 import { UnknownProcedureError } from "./server/errors.js"
-import { shortHash } from "./shared/shortHash.js"
+import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
 
 export * from "./server/errors.js"
 export * from "./server/state.js"
@@ -22,7 +22,7 @@ export type Procedure = (
 
 export async function createRpc({
 	rootDir = "src",
-	include = "**/*.server.ts",
+	include = "**/*.server.{js,ts}",
 	exclude = [],
 }: Options = {}) {
 	const proceduresMap = new Map<string, Procedure>()
@@ -41,8 +41,8 @@ export async function createRpc({
 		for (const exportName in module) {
 			const procedure = module[exportName]!
 
-			const procedureId = `${path}/${exportName}`
-			const hashedProcedureId = `${shortHash(path)}/${exportName}`
+			const procedureId = getProcedureId(path, exportName)
+			const hashedProcedureId = getHashedProcedureId(path, exportName)
 
 			proceduresMap.set(procedureId, procedure)
 			proceduresMap.set(hashedProcedureId, procedure)

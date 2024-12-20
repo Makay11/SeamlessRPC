@@ -7,9 +7,10 @@ import {
 	type ResolvedConfig,
 } from "vite"
 
-import { shortHash } from "./shared/shortHash.js"
+import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
 
 export type Options = {
+	rootDir?: string | undefined
 	include?: string | Array<string> | undefined
 	exclude?: string | Array<string> | undefined
 	hashPaths?: boolean | undefined
@@ -17,12 +18,16 @@ export type Options = {
 }
 
 export function rpc({
-	include = "src/**/*.server.{js,ts}",
+	rootDir = "src",
+	include = "**/*.server.{js,ts}",
 	exclude,
 	hashPaths,
 	sse = false,
 }: Options = {}): PluginOption {
-	const filter = createFilter(include, exclude)
+	// TODO compute the resolve path based on config.root
+	const filter = createFilter(include, exclude, {
+		resolve: rootDir,
+	})
 
 	let config: ResolvedConfig
 
@@ -30,27 +35,29 @@ export function rpc({
 
 	let createExport: (path: string, name: string) => string
 
+	function createExportFactory(hashPaths: boolean): typeof createExport {
+		const transformer = hashPaths ? getHashedProcedureId : getProcedureId
+
+		return (path, name) =>
+			`export const ${name} = rpc("${transformer(path, name)}")`
+	}
+
 	return {
 		name: "@makay/rpc",
 
 		config(config) {
-			if (config.define == null) {
-				config.define = {
-					__MAKAY_RPC_SSE__: sse,
-				}
-			} else {
-				config.define["__MAKAY_RPC_SSE__"] = sse
+			config.define = {
+				...config.define,
+				__MAKAY_RPC_SSE__: sse,
 			}
 		},
 
 		configResolved(_config) {
 			config = _config
 
-			createExport =
-				(hashPaths ?? config.mode === "production")
-					? (path, name) =>
-							`export const ${name} = rpc("${shortHash(path)}/${name}")`
-					: (path, name) => `export const ${name} = rpc("${path}/${name}")`
+			createExport = createExportFactory(
+				hashPaths ?? config.mode === "production",
+			)
 		},
 
 		async transform(code, id) {
@@ -87,6 +94,8 @@ export function rpc({
 			}
 
 			const exports: Array<string> = []
+
+			console.log(config.root, id)
 
 			const path = relative(config.root, id)
 
