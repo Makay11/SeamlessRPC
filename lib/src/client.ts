@@ -16,16 +16,15 @@ export const config: Config = {
 }
 
 export class RpcClientError extends Error {
-	response: Response
+	public response
 
 	constructor(response: Response) {
 		super(response.statusText)
-
 		this.response = response
 	}
 }
 
-export function rpc(proc: string) {
+export function rpc(procedureId: string) {
 	return async (...args: Array<unknown>) => {
 		const response = await fetch(config.url, {
 			method: "POST",
@@ -33,7 +32,7 @@ export function rpc(proc: string) {
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify([proc, ...args]),
+			body: JSON.stringify([procedureId, ...args]),
 		})
 
 		if (!response.ok) {

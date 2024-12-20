@@ -12,12 +12,6 @@ export class InvalidRequestBodyError extends RpcError {
 	}
 }
 
-export class UnknownProcedureError extends RpcError {
-	constructor() {
-		super("Unknown procedure")
-	}
-}
-
 export class ValidationError extends RpcError {
 	public error
 
@@ -40,5 +34,11 @@ export class UnauthorizedError extends RpcError {
 export class ForbiddenError extends RpcError {
 	constructor() {
 		super("Forbidden")
+	}
+}
+
+export class ProcedureNotFoundError extends RpcError {
+	constructor() {
+		super("Procedure not found")
 	}
 }

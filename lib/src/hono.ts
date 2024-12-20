@@ -9,6 +9,7 @@ import {
 	ForbiddenError,
 	InvalidRequestBodyError,
 	type Options as RpcOptions,
+	ProcedureNotFoundError,
 	UnauthorizedError,
 	ValidationError,
 } from "./server.js"
@@ -32,24 +33,24 @@ export async function createRpc({
 	const rpc = await _createRpc(files)
 
 	return async (ctx) => {
-		// this forces a new async context to be created before
-		// we call `createContext` to avoid context collisions
-		await Promise.resolve()
-
-		createContext(ctx)
-
-		if (onRequest != null) {
-			await onRequest(ctx)
-		}
-
-		const procedureId = ctx.req.path // TODO figure this out
-		const args = await ctx.req.json<JsonValue>()
-
-		if (!Array.isArray(args)) {
-			throw new InvalidRequestBodyError()
-		}
-
 		try {
+			// this forces a new async context to be created before
+			// we call `createContext` to avoid context collisions
+			await Promise.resolve()
+
+			createContext(ctx)
+
+			if (onRequest != null) {
+				await onRequest(ctx)
+			}
+
+			const procedureId = ctx.req.path // TODO figure this out
+			const args = await ctx.req.json<JsonValue>()
+
+			if (!Array.isArray(args)) {
+				throw new InvalidRequestBodyError()
+			}
+
 			const result = await rpc(procedureId, args)
 
 			if (result instanceof ReadableStream) {
@@ -85,7 +86,10 @@ export async function createRpc({
 				return onError(ctx, error)
 			}
 
-			if (error instanceof ValidationError) {
+			if (
+				error instanceof InvalidRequestBodyError ||
+				error instanceof ValidationError
+			) {
 				return ctx.json(error, 400)
 			}
 
@@ -95,6 +99,10 @@ export async function createRpc({
 
 			if (error instanceof ForbiddenError) {
 				return ctx.json(error, 403)
+			}
+
+			if (error instanceof ProcedureNotFoundError) {
+				return ctx.json(error, 404)
 			}
 
 			throw error

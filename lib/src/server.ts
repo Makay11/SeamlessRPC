@@ -3,7 +3,7 @@ import { resolve } from "node:path"
 import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
 
-import { UnknownProcedureError } from "./server/errors.js"
+import { ProcedureNotFoundError } from "./server/errors.js"
 import {
 	DEFAULT_EXCLUDE,
 	DEFAULT_INCLUDE,
@@ -58,7 +58,7 @@ export async function createRpc({
 		const procedure = proceduresMap.get(procedureId)
 
 		if (procedure == null) {
-			throw new UnknownProcedureError()
+			throw new ProcedureNotFoundError()
 		}
 
 		return procedure(...args)
