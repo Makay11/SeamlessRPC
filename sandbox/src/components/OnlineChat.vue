@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAsyncState } from "@vueuse/core"
-import { onBeforeUnmount, ref, watchEffect } from "vue"
+import { ref, watchEffect } from "vue"
 
 import {
 	createMessage,
@@ -8,7 +8,6 @@ import {
 	getUser,
 	login as _login,
 	logout as _logout,
-	useMessageCreatedEvents,
 } from "./OnlineChat.server"
 
 const { isLoading: isLoadingUser, state: user } = useAsyncState(getUser, null)
@@ -30,34 +29,34 @@ const {
 	execute: fetchMessages,
 } = useAsyncState(getMessages, [], {
 	immediate: false,
-	shallow: false,
+	resetOnExecute: false,
 })
 
-let unsubscribe: (() => void) | undefined
+// let unsubscribe: (() => void) | undefined
 
-onBeforeUnmount(() => {
-	unsubscribe?.()
-})
+// onBeforeUnmount(() => {
+// 	unsubscribe?.()
+// })
 
 watchEffect(async () => {
 	if (user.value == null) {
-		unsubscribe?.()
+		// unsubscribe?.()
 		return
 	}
 
 	await fetchMessages()
 
-	const messageCreatedEvents = await useMessageCreatedEvents()
+	// const messageCreatedEvents = await useMessageCreatedEvents()
 
-	const reader = messageCreatedEvents.getReader()
+	// const reader = messageCreatedEvents.getReader()
 
-	for (;;) {
-		const { done, value } = await reader.read()
+	// for (;;) {
+	// 	const { done, value } = await reader.read()
 
-		if (done) break
+	// 	if (done) break
 
-		messages.value.push(value)
-	}
+	// 	messages.value.push(value)
+	// }
 })
 
 const newMessageText = ref("")
@@ -68,6 +67,8 @@ async function sendMessage() {
 	await createMessage(newMessageText.value)
 
 	newMessageText.value = ""
+
+	await fetchMessages()
 }
 </script>
 
@@ -95,30 +96,28 @@ async function sendMessage() {
 
 		<button @click="logout()">Logout</button>
 
+		<ul>
+			<li
+				v-for="message in messages"
+				:key="message.id"
+			>
+				{{ message.text }}
+			</li>
+		</ul>
+
+		<form @submit.prevent="sendMessage()">
+			<label>
+				New message
+
+				<input
+					v-model="newMessageText"
+					type="text"
+				/>
+
+				<button type="submit">Send</button>
+			</label>
+		</form>
+
 		<div v-if="isLoadingMessages">Loading messages...</div>
-
-		<template v-else>
-			<ul>
-				<li
-					v-for="message in messages"
-					:key="message.id"
-				>
-					{{ message.text }}
-				</li>
-			</ul>
-
-			<form @submit.prevent="sendMessage()">
-				<label>
-					New message
-
-					<input
-						v-model="newMessageText"
-						type="text"
-					/>
-
-					<button type="submit">Send</button>
-				</label>
-			</form>
-		</template>
 	</template>
 </template>

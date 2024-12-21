@@ -25,8 +25,6 @@ export async function login(username: string) {
 
 export async function logout() {
 	_logout()
-
-	return true
 }
 
 export type Message = {
