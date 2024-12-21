@@ -52,8 +52,8 @@ importers:
         specifier: ^6.0.5
         version: 6.0.5(@types/node@22.10.2)(tsx@4.19.2)
       vite-plugin-inspect:
-        specifier: ^0.10.4
-        version: 0.10.4(rollup@4.29.1)(vite@6.0.5(@types/node@22.10.2)(tsx@4.19.2))
+        specifier: 0.10.3
+        version: 0.10.3(rollup@4.29.1)(vite@6.0.5(@types/node@22.10.2)(tsx@4.19.2))
       vue-tsc:
         specifier: ^2.1.10
         version: 2.1.10(typescript@5.7.2)
@@ -764,8 +764,8 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
-  vite-plugin-inspect@0.10.4:
-    resolution: {integrity: sha512-3BiPCdcINAxoHtSaVy1Fn54a02ghTNXzgAEN+Ad19MhRSnDLKyYplAHyXiWEOF90t3gO8Czvm/x/qblvfb4vJA==}
+  vite-plugin-inspect@0.10.3:
+    resolution: {integrity: sha512-7scdthVsZLER/IPvqJddS0PeD+gTWqxls4w+Mob7IniJfeCiTn1qeCi4zyXvgKEuCh2CiNsTjoFhovOWxDXTuw==}
     engines: {node: '>=14'}
     peerDependencies:
       '@nuxt/kit': '*'
@@ -1406,7 +1406,7 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  vite-plugin-inspect@0.10.4(rollup@4.29.1)(vite@6.0.5(@types/node@22.10.2)(tsx@4.19.2)):
+  vite-plugin-inspect@0.10.3(rollup@4.29.1)(vite@6.0.5(@types/node@22.10.2)(tsx@4.19.2)):
     dependencies:
       '@antfu/utils': 0.7.10
       '@rollup/pluginutils': 5.1.4(rollup@4.29.1)
