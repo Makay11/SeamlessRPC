@@ -1,6 +1,5 @@
 import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
-import type { Handler } from "hono/types"
 import { JsonValue, Promisable } from "type-fest"
 
 import {
@@ -23,17 +22,10 @@ const { createState: createContext, useStateOrThrow: useContext } =
 
 export { useContext }
 
-export async function createRpc(
-	basePath: string,
-	{ onRequest, onError, files }: Options = {},
-): Promise<Handler> {
+export async function createRpc({ onRequest, onError, files }: Options = {}) {
 	const rpc = await _createRpc(files)
 
-	return async (ctx) => {
-		if (!ctx.req.path.startsWith(basePath)) return
-
-		const path = ctx.req.path.slice(basePath.length + 1)
-
+	return async (ctx: Context, procedureId: string) => {
 		try {
 			// this forces a new async context to be created before
 			// we call `createContext` to avoid context collisions
@@ -45,7 +37,6 @@ export async function createRpc(
 				await onRequest(ctx)
 			}
 
-			const procedureId = ctx.req.path // TODO figure this out
 			const args = await ctx.req.json<JsonValue>()
 
 			if (!Array.isArray(args)) {

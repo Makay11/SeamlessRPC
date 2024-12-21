@@ -15,7 +15,11 @@ app.use(
 	})
 )
 
-app.post(await createRpc("/rpc"))
+const rpc = await createRpc()
+
+app.post("/rpc/:id{.+}", (ctx) => {
+	return rpc(ctx, ctx.req.param("id"))
+})
 
 serve(
 	{
