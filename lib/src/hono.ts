@@ -1,6 +1,6 @@
 import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
-import { JsonValue, Promisable } from "type-fest"
+import type { JsonValue, Promisable } from "type-fest"
 
 import {
 	createRpc as _createRpc,
