@@ -43,6 +43,11 @@ export async function createRpc({ onRequest, onError, files }: Options = {}) {
 
 				const result = await rpc(procedureId, args)
 
+				if (result === undefined) {
+					ctx.status(204)
+					return ctx.body(null)
+				}
+
 				if (result instanceof ReadableStream) {
 					return streamSSE(ctx, async (stream) => {
 						const reader = result.getReader()

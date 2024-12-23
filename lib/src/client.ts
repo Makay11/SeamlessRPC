@@ -39,6 +39,10 @@ export function rpc(procedureId: string) {
 			throw new RpcClientError(response)
 		}
 
+		if (response.status === 204) {
+			return
+		}
+
 		if (response.headers.get("Content-Type") === "text/event-stream") {
 			if (!__MAKAY_RPC_SSE__) {
 				throw new Error("SSE support is not enabled.")

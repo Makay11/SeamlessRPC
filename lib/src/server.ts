@@ -23,7 +23,7 @@ export type Options = {
 
 export type Procedure = (
 	...args: Array<JsonValue>
-) => Promise<JsonValue | ReadableStream<JsonValue>>
+) => Promise<JsonValue | ReadableStream<JsonValue> | void> // eslint-disable-line @typescript-eslint/no-invalid-void-type
 
 export async function createRpc({
 	rootDir = DEFAULT_ROOT_DIR,
