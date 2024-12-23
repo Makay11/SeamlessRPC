@@ -9,6 +9,7 @@ import {
 	InvalidRequestBodyError,
 	type Options as RpcOptions,
 	RpcError,
+	runWithStore,
 } from "./server.js"
 
 export type Options = {
@@ -25,64 +26,61 @@ export { useContext }
 export async function createRpc({ onRequest, onError, files }: Options = {}) {
 	const rpc = await _createRpc(files)
 
-	return async (ctx: Context, procedureId: string) => {
-		try {
-			// this forces a new async context to be created before
-			// we call `createContext` to avoid context collisions
-			await Promise.resolve()
+	return async (ctx: Context, procedureId: string) =>
+		runWithStore(async () => {
+			try {
+				createContext(ctx)
 
-			createContext(ctx)
+				if (onRequest != null) {
+					await onRequest(ctx)
+				}
 
-			if (onRequest != null) {
-				await onRequest(ctx)
-			}
+				const args = await ctx.req.json<JsonValue>()
 
-			const args = await ctx.req.json<JsonValue>()
+				if (!Array.isArray(args)) {
+					throw new InvalidRequestBodyError()
+				}
 
-			if (!Array.isArray(args)) {
-				throw new InvalidRequestBodyError()
-			}
+				const result = await rpc(procedureId, args)
 
-			const result = await rpc(procedureId, args)
+				if (result instanceof ReadableStream) {
+					return streamSSE(ctx, async (stream) => {
+						const reader = result.getReader()
 
-			if (result instanceof ReadableStream) {
-				return streamSSE(ctx, async (stream) => {
-					const reader = result.getReader()
-
-					stream.onAbort(async () => reader.cancel())
-
-					await stream.writeSSE({
-						event: "open",
-						data: "",
-					})
-
-					for (;;) {
-						const { done, value } = await reader.read()
-
-						if (done) {
-							await stream.close()
-							break
-						}
+						stream.onAbort(async () => reader.cancel())
 
 						await stream.writeSSE({
-							data: JSON.stringify(value),
+							event: "open",
+							data: "",
 						})
-					}
-				})
-			}
 
-			// @ts-expect-error Type instantiation is excessively deep and possibly infinite.
-			return ctx.json(result)
-		} catch (error) {
-			if (onError != null) {
-				return onError(ctx, error)
-			}
+						for (;;) {
+							const { done, value } = await reader.read()
 
-			if (error instanceof RpcError) {
-				return ctx.json(error, getHttpStatusCode(error))
-			}
+							if (done) {
+								await stream.close()
+								break
+							}
 
-			throw error
-		}
-	}
+							await stream.writeSSE({
+								data: JSON.stringify(value),
+							})
+						}
+					})
+				}
+
+				// @ts-expect-error Type instantiation is excessively deep and possibly infinite.
+				return ctx.json(result)
+			} catch (error) {
+				if (onError != null) {
+					return onError(ctx, error)
+				}
+
+				if (error instanceof RpcError) {
+					return ctx.json(error, getHttpStatusCode(error))
+				}
+
+				throw error
+			}
+		})
 }
