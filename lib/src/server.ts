@@ -38,21 +38,30 @@ export async function createRpc({
 		ignore: exclude,
 	})
 
-	for (const path of paths) {
-		const absolutePath = resolve(rootDir, path)
+	await Promise.all(
+		paths.map(async (path) => {
+			const absolutePath = resolve(rootDir, path)
 
-		const module = (await import(absolutePath)) as Record<string, Procedure>
+			const module = (await import(absolutePath)) as Record<string, Procedure>
 
-		for (const exportName in module) {
-			const procedure = module[exportName]!
+			for (const exportName in module) {
+				const procedure = module[exportName]!
 
-			const procedureId = getProcedureId(path, exportName)
-			const hashedProcedureId = getHashedProcedureId(path, exportName)
+				const ids = [
+					getProcedureId(path, exportName),
+					getHashedProcedureId(path, exportName),
+				]
 
-			proceduresMap.set(procedureId, procedure)
-			proceduresMap.set(hashedProcedureId, procedure)
-		}
-	}
+				for (const id of ids) {
+					if (proceduresMap.has(id)) {
+						throw new Error(`Procedure "${id}" is already defined.`)
+					}
+
+					proceduresMap.set(id, procedure)
+				}
+			}
+		}),
+	)
 
 	return async (procedureId: string, args: Array<JsonValue>) => {
 		const procedure = proceduresMap.get(procedureId)
