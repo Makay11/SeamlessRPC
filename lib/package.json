@@ -60,7 +60,7 @@
 	"dependencies": {
 		"eventsource-parser": "^3.0.0",
 		"tinyglobby": "^0.2.10",
-		"type-fest": "^4.30.2"
+		"type-fest": "^4.31.0"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.17.0",
@@ -82,7 +82,7 @@
 		"prettier": "^3.4.2",
 		"publint": "^0.2.12",
 		"typescript": "~5.7.2",
-		"typescript-eslint": "^8.18.1"
+		"typescript-eslint": "^8.19.0"
 	},
 	"peerDependencies": {
 		"hono": "^4.6.14",
