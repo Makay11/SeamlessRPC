@@ -12,8 +12,8 @@
 	"dependencies": {
 		"@hono/node-server": "^1.13.7",
 		"@makay/rpc": "link:../lib",
-		"@vueuse/core": "^12.0.0",
-		"hono": "^4.6.14",
+		"@vueuse/core": "^12.2.0",
+		"hono": "^4.6.15",
 		"tsx": "^4.19.2",
 		"vue": "^3.5.13",
 		"zod": "^3.24.1"
@@ -25,9 +25,9 @@
 		"@vitejs/plugin-vue": "^5.2.1",
 		"@vue/tsconfig": "^0.7.0",
 		"typescript": "~5.7.2",
-		"vite": "^6.0.5",
-		"vite-plugin-inspect": "0.10.3",
-		"vue-tsc": "^2.1.10"
+		"vite": "^6.0.6",
+		"vite-plugin-inspect": "^0.10.6",
+		"vue-tsc": "^2.2.0"
 	},
 	"packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"
 }
