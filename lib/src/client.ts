@@ -48,7 +48,7 @@ export function rpc(procedureId: string) {
 				throw new Error("SSE support is not enabled.")
 			}
 
-			return eventStream((emit) => {
+			return eventStream(({ enqueue }) => {
 				const abortController = new AbortController()
 
 				response
@@ -59,7 +59,7 @@ export function rpc(procedureId: string) {
 							write({ event, data }) {
 								if (event === "open") return
 
-								emit(JSON.parse(data) as JsonValue)
+								enqueue(JSON.parse(data) as JsonValue)
 							},
 						}),
 						{ signal: abortController.signal },
