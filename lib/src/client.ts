@@ -1,6 +1,7 @@
 import { EventSourceParserStream } from "eventsource-parser/stream"
 import type { JsonValue } from "type-fest"
 
+import type { Controller } from "./shared/eventStream.js"
 import { eventStream } from "./shared/eventStream.js"
 
 declare const __MAKAY_RPC_SSE__: boolean
@@ -49,41 +50,55 @@ export function rpc(procedureId: string) {
 			}
 
 			return eventStream(({ enqueue }) => {
-				const abortController = new AbortController()
+				streamEvents(response.body, enqueue).catch(console.error)
 
-				response
-					.body!.pipeThrough(new TextDecoderStream())
-					.pipeThrough(new EventSourceParserStream())
-					.pipeTo(
-						new WritableStream({
-							write({ event, data }) {
-								if (event === "connected") return
+				// 	.catch((error: unknown) => {
+				// 		if (error instanceof DOMException && error.name === "AbortError")
+				// 			return
 
-								enqueue(JSON.parse(data) as JsonValue)
-							},
-						}),
-						{ signal: abortController.signal },
-					)
-					.catch((error: unknown) => {
-						if (error instanceof DOMException && error.name === "AbortError")
-							return
-
-						console.error(error)
-					})
+				// 		console.error(error)
+				// 	})
 
 				function abort() {
-					abortController.abort()
+					// abortController.abort()
 				}
 
 				window.addEventListener("beforeunload", abort)
 
 				return () => {
-					abortController.abort()
+					// abortController.abort()
 					window.removeEventListener("beforeunload", abort)
 				}
 			})
 		}
 
 		return response.json() as Promise<JsonValue>
+	}
+}
+
+async function streamEvents(
+	body: Response["body"],
+	enqueue: Controller<JsonValue>["enqueue"],
+) {
+	const stream = body!
+		.pipeThrough(new TextDecoderStream())
+		.pipeThrough(new EventSourceParserStream())
+
+	const reader = stream.getReader()
+
+	try {
+		for (;;) {
+			const { done, value } = await reader.read()
+
+			if (done) break
+
+			if (value.event === "connected") continue
+
+			enqueue(JSON.parse(value.data) as JsonValue)
+		}
+	} catch (e) {
+		console.error(e)
+	} finally {
+		reader.releaseLock()
 	}
 }
