@@ -57,7 +57,7 @@ export function rpc(procedureId: string) {
 					.pipeTo(
 						new WritableStream({
 							write({ event, data }) {
-								if (event === "open") return
+								if (event === "connected") return
 
 								enqueue(JSON.parse(data) as JsonValue)
 							},

@@ -8,6 +8,7 @@ import {
 	getUser,
 	login as _login,
 	logout as _logout,
+	useMessageCreatedEvents,
 } from "./OnlineChat.server"
 
 const { isLoading: isLoadingUser, state: user } = useAsyncState(getUser, null)
@@ -30,6 +31,7 @@ const {
 } = useAsyncState(getMessages, [], {
 	immediate: false,
 	resetOnExecute: false,
+	shallow: false,
 })
 
 // let unsubscribe: (() => void) | undefined
@@ -46,17 +48,23 @@ watchEffect(async () => {
 
 	await fetchMessages()
 
-	// const messageCreatedEvents = await useMessageCreatedEvents()
+	const messageCreatedEvents = await useMessageCreatedEvents()
 
-	// const reader = messageCreatedEvents.getReader()
+	const reader = messageCreatedEvents.getReader()
 
-	// for (;;) {
-	// 	const { done, value } = await reader.read()
+	try {
+		for (;;) {
+			const { done, value } = await reader.read()
 
-	// 	if (done) break
+			if (done) break
 
-	// 	messages.value.push(value)
-	// }
+			messages.value.push(value)
+		}
+	} catch (e) {
+		console.error(e)
+	} finally {
+		reader.releaseLock()
+	}
 })
 
 const newMessageText = ref("")
@@ -67,8 +75,6 @@ async function sendMessage() {
 	await createMessage(newMessageText.value)
 
 	newMessageText.value = ""
-
-	await fetchMessages()
 }
 </script>
 

@@ -41,7 +41,7 @@ export async function getMessages() {
 	return messages
 }
 
-const ee = new EventEmitter<{
+const events = new EventEmitter<{
 	MESSAGE_CREATED: [message: Message]
 }>()
 
@@ -61,7 +61,7 @@ export async function createMessage(text: Text) {
 
 	messages.push(message)
 
-	ee.emit("MESSAGE_CREATED", message)
+	events.emit("MESSAGE_CREATED", message)
 
 	return message
 }
@@ -69,11 +69,11 @@ export async function createMessage(text: Text) {
 export async function useMessageCreatedEvents() {
 	await useUserOrThrow()
 
-	return eventStream<Message>((emit) => {
-		ee.on("MESSAGE_CREATED", emit)
+	return eventStream<Message>(({ enqueue }) => {
+		events.on("MESSAGE_CREATED", enqueue)
 
 		return () => {
-			ee.off("MESSAGE_CREATED", emit)
+			events.off("MESSAGE_CREATED", enqueue)
 		}
 	})
 }

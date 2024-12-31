@@ -52,10 +52,10 @@ export async function createRpc({ onRequest, onError, files }: Options = {}) {
 					return streamSSE(ctx, async (stream) => {
 						const reader = result.getReader()
 
-						stream.onAbort(async () => reader.cancel())
+						// stream.onAbort(async () => reader.cancel())
 
 						await stream.writeSSE({
-							event: "open",
+							event: "connected",
 							data: "",
 						})
 
@@ -63,7 +63,7 @@ export async function createRpc({ onRequest, onError, files }: Options = {}) {
 							const { done, value } = await reader.read()
 
 							if (done) {
-								await stream.close()
+								// await stream.close()
 								break
 							}
 
