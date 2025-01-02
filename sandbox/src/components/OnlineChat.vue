@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useAsyncState } from "@vueuse/core"
-import { ref, watchEffect } from "vue"
+import { tryOnBeforeUnmount, useAsyncState, whenever } from "@vueuse/core"
+import { onBeforeMount, ref, watchEffect } from "vue"
 
 import {
 	createMessage,
@@ -34,38 +34,34 @@ const {
 	shallow: false,
 })
 
-// let unsubscribe: (() => void) | undefined
+whenever(
+	() => user.value != null,
+	async (_user, _, onCleanup) => {
+		await fetchMessages()
 
-// onBeforeUnmount(() => {
-// 	unsubscribe?.()
-// })
+		const messageCreatedEvents = await useMessageCreatedEvents()
 
-watchEffect(async () => {
-	if (user.value == null) {
-		// unsubscribe?.()
-		return
-	}
+		const reader = messageCreatedEvents.getReader()
 
-	await fetchMessages()
+		onCleanup(() => {
+			reader.cancel().catch(console.error)
+		})
 
-	const messageCreatedEvents = await useMessageCreatedEvents()
+		try {
+			for (;;) {
+				const { done, value } = await reader.read()
 
-	const reader = messageCreatedEvents.getReader()
+				if (done) break
 
-	try {
-		for (;;) {
-			const { done, value } = await reader.read()
-
-			if (done) break
-
-			messages.value.push(value)
+				messages.value.push(value)
+			}
+		} catch (e) {
+			console.error(e)
+		} finally {
+			reader.releaseLock()
 		}
-	} catch (e) {
-		console.error(e)
-	} finally {
-		reader.releaseLock()
 	}
-})
+)
 
 const newMessageText = ref("")
 
