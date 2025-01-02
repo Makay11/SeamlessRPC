@@ -10,19 +10,23 @@ import {
 import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
 
 export type Options = {
+	url?: string | undefined
+	credentials?: RequestCredentials | undefined
+	sse?: boolean | undefined
 	rootDir?: string | undefined
 	include?: string | Array<string> | undefined
 	exclude?: string | Array<string> | undefined
 	hashPaths?: boolean | undefined
-	sse?: boolean | undefined
 }
 
 export function rpc({
+	url = "/rpc",
+	credentials = "same-origin",
+	sse = false,
 	rootDir = DEFAULT_ROOT_DIR,
 	include = DEFAULT_INCLUDE,
 	exclude = DEFAULT_EXCLUDE,
 	hashPaths,
-	sse = false,
 }: Options = {}): PluginOption {
 	let filter: (id: string) => boolean
 
@@ -49,7 +53,9 @@ export function rpc({
 		config(config) {
 			config.define = {
 				...config.define,
-				__MAKAY_RPC_SSE__: sse,
+				$MAKAY_RPC_URL: JSON.stringify(url),
+				$MAKAY_RPC_CREDENTIALS: JSON.stringify(credentials),
+				$MAKAY_RPC_SSE: JSON.stringify(sse),
 			}
 		},
 

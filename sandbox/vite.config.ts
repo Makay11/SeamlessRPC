@@ -7,7 +7,17 @@ import Inspect from "vite-plugin-inspect"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [vue(), rpc({ sse: true }), Inspect()],
+	plugins: [
+		vue(),
+
+		rpc({
+			url: "http://localhost:3000/rpc",
+			credentials: "include",
+			sse: true,
+		}),
+
+		Inspect(),
+	],
 
 	resolve: {
 		alias: {
