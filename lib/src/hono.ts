@@ -49,32 +49,37 @@ export async function createRpc({ onRequest, onError, files }: Options = {}) {
 				}
 
 				if (result instanceof ReadableStream) {
-					return streamSSE(ctx, async (stream) => {
-						const reader = result.getReader()
+					return streamSSE(
+						ctx,
+						async (stream) => {
+							const reader = result.getReader()
 
-						stream.onAbort(async () => reader.cancel())
+							stream.onAbort(async () => reader.cancel())
 
-						await stream.writeSSE({
-							event: "connected",
-							data: "",
-						})
+							await stream.writeSSE({
+								event: "connected",
+								data: "",
+							})
 
-						try {
-							for (;;) {
-								const { done, value } = await reader.read()
+							try {
+								for (;;) {
+									const { done, value } = await reader.read()
 
-								if (done) break
+									if (done) break
 
-								await stream.writeSSE({
-									data: JSON.stringify(value),
-								})
+									await stream.writeSSE({
+										data: JSON.stringify(value),
+									})
+								}
+							} finally {
+								reader.releaseLock()
 							}
-						} catch (e) {
-							console.error(e)
-						} finally {
-							reader.releaseLock()
-						}
-					})
+						},
+						async () => {
+							// empty error handler to make Hono send the error to the client
+							// also suppresses the default logging of the error
+						},
+					)
 				}
 
 				// @ts-expect-error Type instantiation is excessively deep and possibly infinite.

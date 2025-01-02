@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { tryOnBeforeUnmount, useAsyncState, whenever } from "@vueuse/core"
-import { onBeforeMount, ref, watchEffect } from "vue"
+import { useAsyncState, whenever } from "@vueuse/core"
+import { ref } from "vue"
 
 import {
 	createMessage,
@@ -44,7 +44,9 @@ whenever(
 		const reader = messageCreatedEvents.getReader()
 
 		onCleanup(() => {
-			reader.cancel().catch(console.error)
+			;(messageCreatedEvents.locked ? reader : messageCreatedEvents)
+				.cancel()
+				.catch(console.error)
 		})
 
 		try {

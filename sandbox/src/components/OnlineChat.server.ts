@@ -70,9 +70,11 @@ export async function useMessageCreatedEvents() {
 	await useUserOrThrow()
 
 	return eventStream<Message>(({ enqueue }) => {
+		console.log("subscribed")
 		events.on("MESSAGE_CREATED", enqueue)
 
 		return () => {
+			console.log("unsubscribed")
 			events.off("MESSAGE_CREATED", enqueue)
 		}
 	})

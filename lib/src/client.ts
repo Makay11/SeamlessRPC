@@ -57,7 +57,7 @@ export function rpc(procedureId: string) {
 
 			window.addEventListener("beforeunload", abort)
 
-			return eventStream(({ enqueue }) => {
+			return eventStream(({ enqueue, close, error }) => {
 				response
 					.body!.pipeThrough(new TextDecoderStream())
 					.pipeThrough(new EventSourceParserStream())
@@ -66,15 +66,20 @@ export function rpc(procedureId: string) {
 							write(message) {
 								if (message.event === "connected") return
 
+								if (message.event === "error") {
+									error(new Error(message.data))
+									return
+								}
+
 								enqueue(JSON.parse(message.data) as JsonValue)
 							},
+							close,
 						}),
 					)
-					.catch((error: unknown) => {
-						if (error instanceof DOMException && error.name === "AbortError")
-							return
+					.catch((e: unknown) => {
+						if (e instanceof DOMException && e.name === "AbortError") return
 
-						console.error(error)
+						error(e as Error)
 					})
 
 				return () => {

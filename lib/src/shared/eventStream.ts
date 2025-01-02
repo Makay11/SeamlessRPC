@@ -5,7 +5,7 @@ export type Setup<T extends JsonValue> = (controller: Controller<T>) => Cleanup
 export type Controller<T extends JsonValue> = {
 	enqueue: (value: T) => void
 	close: () => void
-	error: (error?: unknown) => void
+	error: (error: Error) => void
 }
 
 export type Cleanup = () => void
