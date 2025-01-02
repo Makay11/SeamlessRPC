@@ -43,10 +43,12 @@ whenever(
 
 		const reader = messageCreatedEvents.getReader()
 
+		let subscribed = true
+
 		onCleanup(() => {
-			;(messageCreatedEvents.locked ? reader : messageCreatedEvents)
-				.cancel()
-				.catch(console.error)
+			if (subscribed) {
+				reader.cancel().catch(console.error)
+			}
 		})
 
 		try {
@@ -61,6 +63,7 @@ whenever(
 			console.error(e)
 		} finally {
 			reader.releaseLock()
+			subscribed = false
 		}
 	}
 )
