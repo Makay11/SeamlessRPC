@@ -6,8 +6,8 @@ import {
 	DEFAULT_EXCLUDE,
 	DEFAULT_INCLUDE,
 	DEFAULT_ROOT_DIR,
-} from "./shared/defaults.js"
-import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
+} from "./shared/defaults.ts"
+import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.ts"
 
 export type Options = {
 	url?: string | undefined

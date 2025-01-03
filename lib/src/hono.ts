@@ -10,7 +10,7 @@ import {
 	type Options as RpcOptions,
 	RpcError,
 	runWithStore,
-} from "./server.js"
+} from "./server.ts"
 
 export type Options = {
 	onRequest?: ((ctx: Context) => Promisable<void>) | undefined

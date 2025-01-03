@@ -3,17 +3,17 @@ import { resolve } from "node:path"
 import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
 
-import { ProcedureNotFoundError } from "./server/errors.js"
+import { ProcedureNotFoundError } from "./server/errors.ts"
 import {
 	DEFAULT_EXCLUDE,
 	DEFAULT_INCLUDE,
 	DEFAULT_ROOT_DIR,
-} from "./shared/defaults.js"
-import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.js"
+} from "./shared/defaults.ts"
+import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.ts"
 
-export * from "./server/errors.js"
-export * from "./server/state.js"
-export * from "./shared/eventStream.js"
+export * from "./server/errors.ts"
+export * from "./server/state.ts"
+export * from "./shared/eventStream.ts"
 
 export type Options = {
 	rootDir?: string | undefined

@@ -1,5 +1,5 @@
-import { shortHash } from "./shortHash.js"
-import { stripFileExtension } from "./stripFileExtension.js"
+import { shortHash } from "./shortHash.ts"
+import { stripFileExtension } from "./stripFileExtension.ts"
 
 export function getProcedureId(relativeFilePath: string, exportName: string) {
 	return `${stripFileExtension(relativeFilePath)}/${exportName}`

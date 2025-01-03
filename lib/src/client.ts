@@ -1,7 +1,7 @@
 import { EventSourceParserStream } from "eventsource-parser/stream"
 import type { JsonValue } from "type-fest"
 
-import { eventStream } from "./shared/eventStream.js"
+import { eventStream } from "./shared/eventStream.ts"
 
 declare const $MAKAY_RPC_URL: string
 declare const $MAKAY_RPC_CREDENTIALS: RequestCredentials
