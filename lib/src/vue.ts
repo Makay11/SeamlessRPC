@@ -35,36 +35,24 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 			throw new Error("Already subscribed.")
 		}
 
-		isSubscribing.value = true
-
 		try {
+			isSubscribing.value = true
+
 			reader = (await source(...args)).getReader()
 
 			isSubscribed.value = true
 
-			listen()
+			read(reader, onData)
 				.then(onClose)
 				.catch(onError ?? console.error)
 				.finally(() => {
+					reader!.releaseLock()
+					reader = undefined
+
 					isSubscribed.value = false
 				})
 		} finally {
 			isSubscribing.value = false
-		}
-	}
-
-	async function listen() {
-		try {
-			for (;;) {
-				const { done, value } = await reader!.read()
-
-				if (done) break
-
-				onData(value)
-			}
-		} finally {
-			reader!.releaseLock()
-			reader = undefined
 		}
 	}
 
@@ -82,5 +70,18 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 		isSubscribing: computed(() => isSubscribing.value),
 		subscribe,
 		unsubscribe,
+	}
+}
+
+async function read<TData extends Data>(
+	reader: ReadableStreamDefaultReader<TData>,
+	onData: OnData<TData>,
+) {
+	for (;;) {
+		const { done, value } = await reader.read()
+
+		if (done) break
+
+		onData(value)
 	}
 }
