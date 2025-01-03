@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAsyncState, whenever } from "@vueuse/core"
 import { ref } from "vue"
+import { useSubscription } from "@makay/rpc/vue"
 
 import {
 	createMessage,
@@ -34,37 +35,21 @@ const {
 	shallow: false,
 })
 
+const messagesSubscription = useSubscription(useMessageCreatedEvents)
+
+// messages.value.push(value)
+// console.error(e)
+
 whenever(
 	() => user.value != null,
 	async (_user, _, onCleanup) => {
 		await fetchMessages()
 
-		const messageCreatedEvents = await useMessageCreatedEvents()
-
-		const reader = messageCreatedEvents.getReader()
-
-		let subscribed = true
+		messagesSubscription.subscribe()
 
 		onCleanup(() => {
-			if (subscribed) {
-				reader.cancel().catch(console.error)
-			}
+			messagesSubscription.unsubscribe()
 		})
-
-		try {
-			for (;;) {
-				const { done, value } = await reader.read()
-
-				if (done) break
-
-				messages.value.push(value)
-			}
-		} catch (e) {
-			console.error(e)
-		} finally {
-			reader.releaseLock()
-			subscribed = false
-		}
 	}
 )
 
