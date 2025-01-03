@@ -67,14 +67,14 @@ export async function createMessage(text: Text) {
 }
 
 export async function useMessageCreatedEvents() {
-	await useUserOrThrow()
+	const user = await useUserOrThrow()
 
 	return eventStream<Message>(({ enqueue }) => {
-		console.log("subscribed")
+		console.log(`User "${user.username}" subscribed`)
 		events.on("MESSAGE_CREATED", enqueue)
 
 		return () => {
-			console.log("unsubscribed")
+			console.log(`User "${user.username}" unsubscribed`)
 			events.off("MESSAGE_CREATED", enqueue)
 		}
 	})
