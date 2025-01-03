@@ -102,6 +102,9 @@
 		"hono": {
 			"optional": true
 		},
+		"vue": {
+			"optional": true
+		},
 		"zod": {
 			"optional": true
 		}
