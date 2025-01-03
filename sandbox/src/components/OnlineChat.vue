@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAsyncState, whenever } from "@vueuse/core"
-import { ref } from "vue"
+import { reactive, ref } from "vue"
 import { useSubscription } from "@makay/rpc/vue"
 
 import {
@@ -35,12 +35,14 @@ const {
 	shallow: false,
 })
 
-const messagesSubscription = useSubscription({
-	source: useMessageCreatedEvents,
-	onData(data) {
-		messages.value.push(data)
-	},
-})
+const messagesSubscription = reactive(
+	useSubscription({
+		source: useMessageCreatedEvents,
+		onData(data) {
+			messages.value.push(data)
+		},
+	})
+)
 
 whenever(
 	() => user.value != null,
@@ -113,5 +115,8 @@ async function sendMessage() {
 		</form>
 
 		<div v-if="isLoadingMessages">Loading messages...</div>
+
+		<div v-if="messagesSubscription.isSubscribing">Subscribing...</div>
+		<div v-if="messagesSubscription.isSubscribed">Subscribed</div>
 	</template>
 </template>
