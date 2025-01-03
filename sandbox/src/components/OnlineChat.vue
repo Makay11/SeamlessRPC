@@ -115,8 +115,8 @@ async function sendMessage() {
 		</form>
 
 		<div v-if="isLoadingMessages">Loading messages...</div>
-
-		<div v-if="messagesSubscription.isSubscribing">Subscribing...</div>
-		<div v-if="messagesSubscription.isSubscribed">Subscribed</div>
 	</template>
+
+	<div v-if="messagesSubscription.isSubscribing">Subscribing...</div>
+	<div v-if="messagesSubscription.isSubscribed">Subscribed</div>
 </template>
