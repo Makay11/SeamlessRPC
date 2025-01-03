@@ -35,20 +35,22 @@ const {
 	shallow: false,
 })
 
-const messagesSubscription = useSubscription(useMessageCreatedEvents)
-
-// messages.value.push(value)
-// console.error(e)
+const messagesSubscription = useSubscription({
+	source: useMessageCreatedEvents,
+	onData(data) {
+		messages.value.push(data)
+	},
+})
 
 whenever(
 	() => user.value != null,
 	async (_user, _, onCleanup) => {
 		await fetchMessages()
 
-		messagesSubscription.subscribe()
+		await messagesSubscription.subscribe()
 
 		onCleanup(() => {
-			messagesSubscription.unsubscribe()
+			messagesSubscription.unsubscribe().catch(console.error)
 		})
 	}
 )

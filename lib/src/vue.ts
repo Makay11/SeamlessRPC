@@ -40,9 +40,14 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 		try {
 			reader = (await source(...args)).getReader()
 
-			listen().catch(onError ?? console.error)
+			subscribed.value = true
 
-			subscribed.value = true // TODO check order
+			listen()
+				.then(onClose)
+				.catch(onError ?? console.error)
+				.finally(() => {
+					subscribed.value = false
+				})
 		} finally {
 			subscribing.value = false
 		}
@@ -53,10 +58,7 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 			for (;;) {
 				const { done, value } = await reader!.read()
 
-				if (done) {
-					onClose?.()
-					break
-				}
+				if (done) break
 
 				onData(value)
 			}
