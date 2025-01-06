@@ -30,6 +30,8 @@ describe("eventStream", () => {
 			done: true,
 			value: undefined,
 		})
+
+		assert.strictEqual(cleanup.mock.callCount(), 1)
 	})
 
 	it("errors the stream", async (t) => {
@@ -50,5 +52,29 @@ describe("eventStream", () => {
 		})
 
 		await assert.rejects(reader.read(), new Error("boom"))
+
+		assert.strictEqual(cleanup.mock.callCount(), 1)
+	})
+
+	it("cleans up when the stream is canceled", async (t) => {
+		const cleanup = mock.fn()
+
+		const stream = eventStream(({ close }) => {
+			setTimeout(() => {
+				close()
+			}, 0)
+
+			return cleanup
+		})
+
+		const reader = stream.getReader()
+
+		t.after(() => {
+			reader.releaseLock()
+		})
+
+		await reader.cancel()
+
+		assert.strictEqual(cleanup.mock.callCount(), 1)
 	})
 })
