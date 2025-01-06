@@ -33,7 +33,7 @@ describe("InvalidRequestBodyError", () => {
 	})
 })
 
-void describe.only("ValidationError", () => {
+describe("ValidationError", () => {
 	it("extends RpcError", () => {
 		assert.ok(new ValidationError() instanceof RpcError)
 	})
