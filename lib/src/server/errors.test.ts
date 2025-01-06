@@ -11,6 +11,89 @@ import {
 	ValidationError,
 } from "./errors.ts"
 
+describe("RpcError", () => {
+	it("toJSON returns the error message", () => {
+		assert.deepStrictEqual(
+			new RpcError("error_message").toJSON(),
+			"error_message",
+		)
+	})
+})
+
+describe("InvalidRequestBodyError", () => {
+	it("extends RpcError", () => {
+		assert.ok(new InvalidRequestBodyError() instanceof RpcError)
+	})
+
+	it("toJSON returns a predefined message", () => {
+		assert.deepStrictEqual(
+			new InvalidRequestBodyError().toJSON(),
+			"Invalid request body",
+		)
+	})
+})
+
+void describe.only("ValidationError", () => {
+	it("extends RpcError", () => {
+		assert.ok(new ValidationError() instanceof RpcError)
+	})
+
+	describe("error is set", () => {
+		it("toJSON returns the error", () => {
+			assert.deepStrictEqual(
+				new ValidationError("some_error").toJSON(),
+				"some_error",
+			)
+		})
+
+		it("exposes the error field", () => {
+			assert.deepStrictEqual(
+				new ValidationError("some_error").error,
+				"some_error",
+			)
+		})
+	})
+
+	describe("error is not set", () => {
+		it("toJSON returns a predefined message", () => {
+			assert.deepStrictEqual(new ValidationError().toJSON(), "Validation error")
+		})
+	})
+})
+
+describe("UnauthorizedError", () => {
+	it("extends RpcError", () => {
+		assert.ok(new UnauthorizedError() instanceof RpcError)
+	})
+
+	it("toJSON returns a predefined message", () => {
+		assert.deepStrictEqual(new UnauthorizedError().toJSON(), "Unauthorized")
+	})
+})
+
+describe("ForbiddenError", () => {
+	it("extends RpcError", () => {
+		assert.ok(new ForbiddenError() instanceof RpcError)
+	})
+
+	it("toJSON returns a predefined message", () => {
+		assert.deepStrictEqual(new ForbiddenError().toJSON(), "Forbidden")
+	})
+})
+
+describe("ProcedureNotFoundError", () => {
+	it("extends RpcError", () => {
+		assert.ok(new ProcedureNotFoundError() instanceof RpcError)
+	})
+
+	it("toJSON returns a predefined message", () => {
+		assert.deepStrictEqual(
+			new ProcedureNotFoundError().toJSON(),
+			"Procedure not found",
+		)
+	})
+})
+
 describe("getHttpStatusCode", () => {
 	it("returns 400 for InvalidRequestBodyError", () => {
 		assert.strictEqual(getHttpStatusCode(new InvalidRequestBodyError()), 400)
