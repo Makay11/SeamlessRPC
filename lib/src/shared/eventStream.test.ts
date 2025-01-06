@@ -59,13 +59,7 @@ describe("eventStream", () => {
 	it("cleans up when the stream is canceled", async (t) => {
 		const cleanup = mock.fn()
 
-		const stream = eventStream(({ close }) => {
-			setTimeout(() => {
-				close()
-			}, 0)
-
-			return cleanup
-		})
+		const stream = eventStream(() => cleanup)
 
 		const reader = stream.getReader()
 
