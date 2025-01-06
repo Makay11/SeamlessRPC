@@ -1,10 +1,12 @@
 import assert from "node:assert"
-import { describe, it } from "node:test"
+import { describe, it, mock } from "node:test"
 
 import { eventStream } from "./eventStream.ts"
 
 describe("eventStream", () => {
 	it("enqueues values and closes the stream", async (t) => {
+		const cleanup = mock.fn()
+
 		const stream = eventStream(({ enqueue, close }) => {
 			setTimeout(() => {
 				enqueue("hello")
@@ -12,9 +14,7 @@ describe("eventStream", () => {
 				close()
 			}, 0)
 
-			return () => {
-				// noop
-			}
+			return cleanup
 		})
 
 		const reader = stream.getReader()
@@ -25,6 +25,7 @@ describe("eventStream", () => {
 
 		assert.deepStrictEqual(await reader.read(), { done: false, value: "hello" })
 		assert.deepStrictEqual(await reader.read(), { done: false, value: "world" })
+
 		assert.deepStrictEqual(await reader.read(), {
 			done: true,
 			value: undefined,
@@ -32,14 +33,14 @@ describe("eventStream", () => {
 	})
 
 	it("errors the stream", async (t) => {
+		const cleanup = mock.fn()
+
 		const stream = eventStream(({ error }) => {
 			setTimeout(() => {
 				error(new Error("boom"))
 			}, 0)
 
-			return () => {
-				// noop
-			}
+			return cleanup
 		})
 
 		const reader = stream.getReader()

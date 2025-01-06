@@ -52,7 +52,9 @@
 	],
 	"scripts": {
 		"dev": "tsc -p tsconfig.lib.json --watch",
-		"validate": "pnpm lint && pnpm test && knip && pnpm format:check",
+		"validate": "pnpm type-check && pnpm lint && pnpm test && knip && pnpm format:check",
+		"type-check": "tsc -p tsconfig.test.json",
+		"type-check:watch": "pnpm type-check --watch",
 		"lint": "eslint --max-warnings=0",
 		"lint:fix": "pnpm lint --fix",
 		"test": "node --test --experimental-test-coverage --experimental-strip-types",
