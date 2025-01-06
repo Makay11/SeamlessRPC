@@ -40,7 +40,7 @@ describe("RpcClientError", () => {
 })
 
 describe("rpc", () => {
-	let window: Partial<typeof globalThis.window>
+	let window: typeof globalThis.window
 
 	let fetch: Mock<typeof globalThis.fetch>
 
@@ -143,7 +143,8 @@ describe("rpc", () => {
 	it("returns an event stream if the response is an event stream", async () => {
 		globalThis.$MAKAY_RPC_SSE = true
 
-		window.addEventListener = mock.fn()
+		const addEventListener = (window.addEventListener = mock.fn())
+		const removeEventListener = (window.removeEventListener = mock.fn())
 
 		const body = new ReadableStream()
 
@@ -159,5 +160,25 @@ describe("rpc", () => {
 		const stream = await execute()
 
 		assert(stream instanceof ReadableStream)
+
+		assert.strictEqual(addEventListener.mock.callCount(), 1)
+
+		const [addedEvent, addedListener] =
+			addEventListener.mock.calls[0]!.arguments
+
+		assert.strictEqual(addedEvent, "beforeunload")
+
+		assert.strictEqual(removeEventListener.mock.callCount(), 0)
+
+		await stream.cancel()
+
+		assert.strictEqual(removeEventListener.mock.callCount(), 1)
+
+		const [removedEvent, removedListener] =
+			removeEventListener.mock.calls[0]!.arguments
+
+		assert.strictEqual(removedEvent, "beforeunload")
+
+		assert.strictEqual(addedListener, removedListener)
 	})
 })
