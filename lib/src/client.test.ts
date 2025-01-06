@@ -8,6 +8,8 @@ declare global {
 	var $MAKAY_RPC_URL: string
 	var $MAKAY_RPC_CREDENTIALS: RequestCredentials
 	var $MAKAY_RPC_SSE: boolean
+
+	var window: Window & typeof globalThis
 	/* eslint-enable no-var */
 }
 
@@ -38,12 +40,16 @@ describe("RpcClientError", () => {
 })
 
 describe("rpc", () => {
+	let window: Partial<typeof globalThis.window>
+
 	let fetch: Mock<typeof globalThis.fetch>
 
 	beforeEach(() => {
 		globalThis.$MAKAY_RPC_URL = "http://localhost:3000"
 		globalThis.$MAKAY_RPC_CREDENTIALS = "include"
 		globalThis.$MAKAY_RPC_SSE = false
+
+		window = globalThis.window = {} as typeof globalThis.window
 
 		fetch = globalThis.fetch = mock.fn()
 
@@ -132,5 +138,26 @@ describe("rpc", () => {
 		const execute = rpc("foo/bar/baz")
 
 		await assert.rejects(execute(), new Error("SSE support is not enabled."))
+	})
+
+	it("returns an event stream if the response is an event stream", async () => {
+		globalThis.$MAKAY_RPC_SSE = true
+
+		window.addEventListener = mock.fn()
+
+		const body = new ReadableStream()
+
+		mockResponse(
+			new Response(body, {
+				status: 200,
+				headers: { "content-type": "text/event-stream" },
+			}),
+		)
+
+		const execute = rpc("foo/bar/baz")
+
+		const stream = await execute()
+
+		assert(stream instanceof ReadableStream)
 	})
 })
