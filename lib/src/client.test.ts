@@ -11,6 +11,32 @@ declare global {
 	/* eslint-enable no-var */
 }
 
+describe("RpcClientError", () => {
+	it("extends Error", () => {
+		assert(
+			new RpcClientError(new Response(null, { status: 500 })) instanceof Error,
+		)
+	})
+
+	it("sets the message to the response status text", () => {
+		const response = new Response(null, {
+			status: 500,
+			statusText: "Internal Server Error",
+		})
+
+		assert.strictEqual(
+			new RpcClientError(response).message,
+			"Internal Server Error",
+		)
+	})
+
+	it("exposes the response", () => {
+		const response = new Response(null, { status: 500 })
+
+		assert.strictEqual(new RpcClientError(response).response, response)
+	})
+})
+
 describe("rpc", () => {
 	let fetch: Mock<typeof globalThis.fetch>
 
@@ -62,5 +88,16 @@ describe("rpc", () => {
 		})
 
 		assert(signal != null)
+	})
+
+	it("throws if the response is not ok", async () => {
+		mockResponse(new Response(null, { status: 500 }))
+
+		const execute = rpc("foo/bar/baz")
+
+		await assert.rejects(
+			execute(),
+			new RpcClientError(new Response(null, { status: 500 })),
+		)
 	})
 })

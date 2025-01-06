@@ -46,7 +46,7 @@ describe("ValidationError", () => {
 			)
 		})
 
-		it("exposes the error field", () => {
+		it("exposes the error", () => {
 			assert.deepStrictEqual(
 				new ValidationError("some_error").error,
 				"some_error",
