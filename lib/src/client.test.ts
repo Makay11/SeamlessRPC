@@ -168,10 +168,16 @@ describe("rpc", () => {
 
 		assert.strictEqual(addedEvent, "beforeunload")
 
+		assert.strictEqual(fetch.mock.callCount(), 1)
+
+		const signal = fetch.mock.calls[0]!.arguments[1]!.signal!
+
+		assert.strictEqual(signal.aborted, false)
 		assert.strictEqual(removeEventListener.mock.callCount(), 0)
 
 		await stream.cancel()
 
+		assert.strictEqual(signal.aborted, true)
 		assert.strictEqual(removeEventListener.mock.callCount(), 1)
 
 		const [removedEvent, removedListener] =
