@@ -22,7 +22,7 @@ describe("RpcError", () => {
 
 describe("InvalidRequestBodyError", () => {
 	it("extends RpcError", () => {
-		assert.ok(new InvalidRequestBodyError() instanceof RpcError)
+		assert(new InvalidRequestBodyError() instanceof RpcError)
 	})
 
 	it("toJSON returns a predefined message", () => {
@@ -35,7 +35,7 @@ describe("InvalidRequestBodyError", () => {
 
 describe("ValidationError", () => {
 	it("extends RpcError", () => {
-		assert.ok(new ValidationError() instanceof RpcError)
+		assert(new ValidationError() instanceof RpcError)
 	})
 
 	describe("error is set", () => {
@@ -63,7 +63,7 @@ describe("ValidationError", () => {
 
 describe("UnauthorizedError", () => {
 	it("extends RpcError", () => {
-		assert.ok(new UnauthorizedError() instanceof RpcError)
+		assert(new UnauthorizedError() instanceof RpcError)
 	})
 
 	it("toJSON returns a predefined message", () => {
@@ -73,7 +73,7 @@ describe("UnauthorizedError", () => {
 
 describe("ForbiddenError", () => {
 	it("extends RpcError", () => {
-		assert.ok(new ForbiddenError() instanceof RpcError)
+		assert(new ForbiddenError() instanceof RpcError)
 	})
 
 	it("toJSON returns a predefined message", () => {
@@ -83,7 +83,7 @@ describe("ForbiddenError", () => {
 
 describe("ProcedureNotFoundError", () => {
 	it("extends RpcError", () => {
-		assert.ok(new ProcedureNotFoundError() instanceof RpcError)
+		assert(new ProcedureNotFoundError() instanceof RpcError)
 	})
 
 	it("toJSON returns a predefined message", () => {
