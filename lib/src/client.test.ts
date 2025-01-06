@@ -100,4 +100,37 @@ describe("rpc", () => {
 			new RpcClientError(new Response(null, { status: 500 })),
 		)
 	})
+
+	it("returns undefined if the response is 204", async () => {
+		mockResponse(new Response(null, { status: 204 }))
+
+		const execute = rpc("foo/bar/baz")
+
+		assert.strictEqual(await execute(), undefined)
+	})
+
+	it("returns the parsed JSON response body if the response is not an event stream", async () => {
+		mockResponse(new Response(JSON.stringify({ hello: "world" })))
+
+		const execute = rpc("foo/bar/baz")
+
+		assert.deepStrictEqual(await execute(), {
+			hello: "world",
+		})
+	})
+
+	it("throws if the response is an event stream but SSE support is not enabled", async () => {
+		globalThis.$MAKAY_RPC_SSE = false
+
+		mockResponse(
+			new Response(null, {
+				status: 200,
+				headers: { "content-type": "text/event-stream" },
+			}),
+		)
+
+		const execute = rpc("foo/bar/baz")
+
+		await assert.rejects(execute(), new Error("SSE support is not enabled."))
+	})
 })
