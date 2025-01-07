@@ -1,5 +1,7 @@
 import assert from "node:assert"
-import { before, beforeEach, describe, it, type Mock, mock } from "node:test"
+import { beforeEach, describe, it, type Mock, mock } from "node:test"
+
+import type { EventSourceMessage } from "eventsource-parser/stream"
 
 import { rpc, RpcClientError } from "./client.ts"
 
@@ -127,20 +129,29 @@ describe("rpc", () => {
 		let addEventListener: Mock<typeof window.addEventListener>
 		let removeEventListener: Mock<typeof window.removeEventListener>
 
+		let responseStreamController: ReadableStreamController<Uint8Array>
+
 		let _execute: ReturnType<typeof rpc>
 
 		beforeEach(() => {
 			globalThis.$MAKAY_RPC_SSE = true
 
-			mockResponse(
-				new Response(new ReadableStream(), {
-					status: 200,
-					headers: { "content-type": "text/event-stream" },
-				}),
-			)
-
 			addEventListener = window.addEventListener = mock.fn()
 			removeEventListener = window.removeEventListener = mock.fn()
+
+			mockResponse(
+				new Response(
+					new ReadableStream({
+						start(controller) {
+							responseStreamController = controller
+						},
+					}),
+					{
+						status: 200,
+						headers: { "content-type": "text/event-stream" },
+					},
+				),
+			)
 
 			_execute = rpc("foo/bar/baz")
 		})
@@ -155,6 +166,18 @@ describe("rpc", () => {
 
 		function getSignal() {
 			return fetch.mock.calls[0]!.arguments[1]!.signal!
+		}
+
+		const encoder = new TextEncoder()
+
+		function enqueueMessage({ event, data }: EventSourceMessage) {
+			responseStreamController.enqueue(
+				encoder.encode(
+					event == null
+						? `data:${JSON.stringify(data)}\n\n`
+						: `event:${event}\ndata:${JSON.stringify(data)}\n\n`,
+				),
+			)
 		}
 
 		it("throws if the response is an event stream but SSE support is not enabled", async () => {
@@ -215,8 +238,40 @@ describe("rpc", () => {
 			assert.strictEqual(addedListener, removedListener)
 		})
 
-		it("streams the events received from the server", async () => {
+		it("streams the events received from the server", async (t) => {
 			const stream = await execute()
+
+			const reader = stream.getReader()
+
+			t.after(() => {
+				reader.releaseLock()
+			})
+
+			enqueueMessage({ data: "hello" })
+			enqueueMessage({ data: "world" })
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: "hello",
+			})
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: "world",
+			})
+		})
+
+		it("filters out the connected event", async () => {
+			const stream = await execute()
+
+			const reader = stream.getReader()
+
+			enqueueMessage({ event: "connected", data: "" })
+			enqueueMessage({ data: "hello" })
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: "hello",
+			})
 		})
 	})
 })
