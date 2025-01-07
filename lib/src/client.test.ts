@@ -140,7 +140,7 @@ describe("rpc", () => {
 		await assert.rejects(execute(), new Error("SSE support is not enabled."))
 	})
 
-	it("returns an event stream if the response is an event stream", async () => {
+	it("returns an event stream if the response is an event stream and SSE support is enabled", async () => {
 		globalThis.$MAKAY_RPC_SSE = true
 
 		const addEventListener = (window.addEventListener = mock.fn())
