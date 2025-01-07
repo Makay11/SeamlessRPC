@@ -29,9 +29,14 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 	const isSubscribed = shallowRef(false)
 
 	let reader: ReadableStreamDefaultReader<TData> | undefined
+	let readPromise: Promise<void> | undefined
 
 	async function subscribe(...args: TArgs) {
-		if (isSubscribing.value || isSubscribed.value) {
+		if (isSubscribing.value) {
+			throw new Error("Already subscribing.")
+		}
+
+		if (isSubscribed.value) {
 			throw new Error("Already subscribed.")
 		}
 
@@ -42,12 +47,14 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 
 			isSubscribed.value = true
 
-			read(reader, onData)
+			readPromise = read(reader, onData)
 				.then(onClose)
 				.catch(onError ?? console.error)
 				.finally(() => {
 					reader!.releaseLock()
+
 					reader = undefined
+					readPromise = undefined
 
 					isSubscribed.value = false
 				})
@@ -58,6 +65,7 @@ export function useSubscription<TArgs extends Args, TData extends Data>({
 
 	async function unsubscribe() {
 		await reader?.cancel()
+		await readPromise
 	}
 
 	onBeforeUnmount(() => {
