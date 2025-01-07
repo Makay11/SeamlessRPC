@@ -1,5 +1,5 @@
 import assert from "node:assert"
-import { beforeEach, describe, it, type Mock, mock } from "node:test"
+import { before, beforeEach, describe, it, type Mock, mock } from "node:test"
 
 import { rpc, RpcClientError } from "./client.ts"
 
@@ -120,71 +120,103 @@ describe("rpc", () => {
 
 		const execute = rpc("foo/bar/baz")
 
-		assert.deepStrictEqual(await execute(), {
-			hello: "world",
+		assert.deepStrictEqual(await execute(), { hello: "world" })
+	})
+
+	describe("SSE", () => {
+		let addEventListener: Mock<typeof window.addEventListener>
+		let removeEventListener: Mock<typeof window.removeEventListener>
+
+		let _execute: ReturnType<typeof rpc>
+
+		beforeEach(() => {
+			globalThis.$MAKAY_RPC_SSE = true
+
+			mockResponse(
+				new Response(new ReadableStream(), {
+					status: 200,
+					headers: { "content-type": "text/event-stream" },
+				}),
+			)
+
+			addEventListener = window.addEventListener = mock.fn()
+			removeEventListener = window.removeEventListener = mock.fn()
+
+			_execute = rpc("foo/bar/baz")
 		})
-	})
 
-	it("throws if the response is an event stream but SSE support is not enabled", async () => {
-		globalThis.$MAKAY_RPC_SSE = false
+		async function execute() {
+			const stream = await _execute()
 
-		mockResponse(
-			new Response(null, {
-				status: 200,
-				headers: { "content-type": "text/event-stream" },
-			}),
-		)
+			assert(stream instanceof ReadableStream)
 
-		const execute = rpc("foo/bar/baz")
+			return stream
+		}
 
-		await assert.rejects(execute(), new Error("SSE support is not enabled."))
-	})
+		function getSignal() {
+			return fetch.mock.calls[0]!.arguments[1]!.signal!
+		}
 
-	it("returns an event stream if the response is an event stream and SSE support is enabled", async () => {
-		globalThis.$MAKAY_RPC_SSE = true
+		it("throws if the response is an event stream but SSE support is not enabled", async () => {
+			globalThis.$MAKAY_RPC_SSE = false
 
-		const addEventListener = (window.addEventListener = mock.fn())
-		const removeEventListener = (window.removeEventListener = mock.fn())
+			await assert.rejects(execute(), new Error("SSE support is not enabled."))
+		})
 
-		const body = new ReadableStream()
+		it("aborts the request on beforeunload", async () => {
+			assert.strictEqual(addEventListener.mock.callCount(), 0)
 
-		mockResponse(
-			new Response(body, {
-				status: 200,
-				headers: { "content-type": "text/event-stream" },
-			}),
-		)
+			await execute()
 
-		const execute = rpc("foo/bar/baz")
+			assert.strictEqual(addEventListener.mock.callCount(), 1)
 
-		const stream = await execute()
+			const [addedEvent, addedListener] =
+				addEventListener.mock.calls[0]!.arguments
 
-		assert(stream instanceof ReadableStream)
+			assert.strictEqual(addedEvent, "beforeunload")
+			assert(addedListener instanceof Function)
 
-		assert.strictEqual(addEventListener.mock.callCount(), 1)
+			const signal = getSignal()
 
-		const [addedEvent, addedListener] =
-			addEventListener.mock.calls[0]!.arguments
+			assert.strictEqual(signal.aborted, false)
 
-		assert.strictEqual(addedEvent, "beforeunload")
+			addedListener(new Event("fake_event"))
 
-		assert.strictEqual(fetch.mock.callCount(), 1)
+			assert.strictEqual(signal.aborted, true)
+		})
 
-		const signal = fetch.mock.calls[0]!.arguments[1]!.signal!
+		it("aborts the request when the stream is cancelled", async () => {
+			const stream = await execute()
 
-		assert.strictEqual(signal.aborted, false)
-		assert.strictEqual(removeEventListener.mock.callCount(), 0)
+			const signal = getSignal()
 
-		await stream.cancel()
+			assert.strictEqual(signal.aborted, false)
 
-		assert.strictEqual(signal.aborted, true)
-		assert.strictEqual(removeEventListener.mock.callCount(), 1)
+			await stream.cancel()
 
-		const [removedEvent, removedListener] =
-			removeEventListener.mock.calls[0]!.arguments
+			assert.strictEqual(signal.aborted, true)
+		})
 
-		assert.strictEqual(removedEvent, "beforeunload")
+		it("removes the beforeunload event listener when the stream is cancelled", async () => {
+			const stream = await execute()
 
-		assert.strictEqual(addedListener, removedListener)
+			const [, addedListener] = addEventListener.mock.calls[0]!.arguments
+
+			assert.strictEqual(removeEventListener.mock.callCount(), 0)
+
+			await stream.cancel()
+
+			assert.strictEqual(removeEventListener.mock.callCount(), 1)
+
+			const [removedEvent, removedListener] =
+				removeEventListener.mock.calls[0]!.arguments
+
+			assert.strictEqual(removedEvent, "beforeunload")
+			assert.strictEqual(addedListener, removedListener)
+		})
+
+		it("streams the events received from the server", async () => {
+			const stream = await execute()
+		})
 	})
 })
