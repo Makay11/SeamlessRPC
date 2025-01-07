@@ -4,7 +4,7 @@ import { describe, it, mock } from "node:test"
 import { eventStream } from "./eventStream.ts"
 
 describe("eventStream", () => {
-	it("enqueues values and closes the stream", async (t) => {
+	it("enqueues values and closes the stream", async () => {
 		const cleanup = mock.fn()
 
 		const stream = eventStream(({ enqueue, close }) => {
@@ -19,10 +19,6 @@ describe("eventStream", () => {
 
 		const reader = stream.getReader()
 
-		t.after(() => {
-			reader.releaseLock()
-		})
-
 		assert.deepStrictEqual(await reader.read(), { done: false, value: "hello" })
 		assert.deepStrictEqual(await reader.read(), { done: false, value: "world" })
 
@@ -34,7 +30,7 @@ describe("eventStream", () => {
 		assert.strictEqual(cleanup.mock.callCount(), 1)
 	})
 
-	it("errors the stream", async (t) => {
+	it("errors the stream", async () => {
 		const cleanup = mock.fn()
 
 		const stream = eventStream(({ error }) => {
@@ -47,25 +43,17 @@ describe("eventStream", () => {
 
 		const reader = stream.getReader()
 
-		t.after(() => {
-			reader.releaseLock()
-		})
-
 		await assert.rejects(reader.read(), new Error("boom"))
 
 		assert.strictEqual(cleanup.mock.callCount(), 1)
 	})
 
-	it("cleans up when the stream is canceled", async (t) => {
+	it("cleans up when the stream is canceled", async () => {
 		const cleanup = mock.fn()
 
 		const stream = eventStream(() => cleanup)
 
 		const reader = stream.getReader()
-
-		t.after(() => {
-			reader.releaseLock()
-		})
 
 		await reader.cancel()
 

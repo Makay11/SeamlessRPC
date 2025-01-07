@@ -53,11 +53,12 @@ describe("rpc", () => {
 
 		window = globalThis.window = {} as typeof globalThis.window
 
-		fetch = globalThis.fetch = mock.fn()
-
-		fetch.mock.mockImplementation(() => {
-			throw new Error("Missing response mock.")
-		})
+		fetch = globalThis.fetch = mock.fn(
+			/* node:coverage ignore next 3 */
+			() => {
+				throw new Error("Missing response mock.")
+			},
+		)
 	})
 
 	function mockResponse(response: Response) {
@@ -238,14 +239,10 @@ describe("rpc", () => {
 			assert.strictEqual(addedListener, removedListener)
 		})
 
-		it("streams the events received from the server", async (t) => {
+		it("streams the events received from the server", async () => {
 			const stream = await execute()
 
 			const reader = stream.getReader()
-
-			t.after(() => {
-				reader.releaseLock()
-			})
 
 			enqueueMessage({ data: "hello" })
 			enqueueMessage({ data: "world" })
@@ -272,6 +269,39 @@ describe("rpc", () => {
 				done: false,
 				value: "hello",
 			})
+		})
+
+		it("closes the stream when the server closes the event stream", async () => {
+			const stream = await execute()
+
+			const reader = stream.getReader()
+
+			responseStreamController.close()
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: true,
+				value: undefined,
+			})
+		})
+
+		it("errors the stream when the server sends an error event", async () => {
+			const stream = await execute()
+
+			const reader = stream.getReader()
+
+			enqueueMessage({ event: "error", data: "Something went wrong." })
+
+			await assert.rejects(reader.read(), new Error('"Something went wrong."'))
+		})
+
+		it("errors the stream when the response stream errors", async () => {
+			const stream = await execute()
+
+			const reader = stream.getReader()
+
+			responseStreamController.error(new Error("Something went wrong."))
+
+			await assert.rejects(reader.read(), new Error("Something went wrong."))
 		})
 	})
 })
