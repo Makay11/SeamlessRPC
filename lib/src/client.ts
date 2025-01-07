@@ -69,6 +69,7 @@ export function rpc(procedureId: string) {
 						}),
 					)
 					.catch((e: unknown) => {
+						/* node:coverage ignore next */
 						if (e instanceof DOMException && e.name === "AbortError") return
 
 						error(e as Error)
