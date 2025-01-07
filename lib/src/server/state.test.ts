@@ -14,9 +14,12 @@ describe("runWithStore", () => {
 	it("throws if there is a nested call", () => {
 		assert.throws(() => {
 			runWithStore(() => {
-				runWithStore(() => {
-					// do nothing
-				})
+				runWithStore(
+					/* node:coverage ignore next 3 */
+					() => {
+						// do nothing
+					},
+				)
 			})
 		}, new Error("Store has already been created."))
 	})
@@ -24,6 +27,14 @@ describe("runWithStore", () => {
 
 describe("defineState", () => {
 	describe("createState", () => {
+		it("throws if called outside of a runWithStore call", () => {
+			const { createState } = defineState<string>()
+
+			assert.throws(() => {
+				createState("hello")
+			}, new Error("Store has not been created."))
+		})
+
 		it("creates a state", () => {
 			const { createState } = defineState<string>()
 
@@ -45,6 +56,14 @@ describe("defineState", () => {
 	})
 
 	describe("replaceState", () => {
+		it("throws if called outside of a runWithStore call", () => {
+			const { replaceState } = defineState<string>()
+
+			assert.throws(() => {
+				replaceState("hello")
+			}, new Error("Store has not been created."))
+		})
+
 		it("replaces the state", () => {
 			const { createState, replaceState } = defineState<string>()
 
@@ -58,6 +77,14 @@ describe("defineState", () => {
 	})
 
 	describe("clearState", () => {
+		it("throws if called outside of a runWithStore call", () => {
+			const { clearState } = defineState<string>()
+
+			assert.throws(() => {
+				clearState()
+			}, new Error("Store has not been created."))
+		})
+
 		it("clears the state", () => {
 			const { createState, clearState } = defineState<string>()
 
@@ -72,6 +99,14 @@ describe("defineState", () => {
 	})
 
 	describe("useState", () => {
+		it("throws if called outside of a runWithStore call", () => {
+			const { useState } = defineState<string>()
+
+			assert.throws(() => {
+				useState()
+			}, new Error("Store has not been created."))
+		})
+
 		it("returns the state", () => {
 			const { createState, useState } = defineState<string>()
 
@@ -93,6 +128,14 @@ describe("defineState", () => {
 	})
 
 	describe("useStateOrThrow", () => {
+		it("throws if called outside of a runWithStore call", () => {
+			const { useStateOrThrow } = defineState<string>()
+
+			assert.throws(() => {
+				useStateOrThrow()
+			}, new Error("Store has not been created."))
+		})
+
 		it("returns the state", () => {
 			const { createState, useStateOrThrow } = defineState<string>()
 
