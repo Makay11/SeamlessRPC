@@ -12,9 +12,12 @@ import {
 	runWithStore,
 } from "./server.ts"
 
+export type OnRequest = (ctx: Context) => Promisable<void>
+export type OnError = (ctx: Context, error: unknown) => Promisable<Response>
+
 export type Options = {
-	onRequest?: ((ctx: Context) => Promisable<void>) | undefined
-	onError?: ((ctx: Context, error: unknown) => Promisable<Response>) | undefined
+	onRequest?: OnRequest | undefined
+	onError?: OnError | undefined
 	files?: RpcOptions | undefined
 }
 

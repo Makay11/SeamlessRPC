@@ -3,6 +3,7 @@ import { beforeEach, describe, it, mock } from "node:test"
 
 import { Hono } from "hono"
 
+import type { OnError, OnRequest, Options } from "./hono.ts"
 import * as server from "./server.ts"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,8 +30,8 @@ mock.module("./server.ts", {
 
 const { createRpc } = await import("./hono.ts")
 
-async function getApp() {
-	const rpc = await createRpc()
+async function getApp(options?: Options) {
+	const rpc = await createRpc(options)
 
 	return new Hono().post("/rpc/:id{.+}", async (ctx) => {
 		return rpc(ctx, ctx.req.param("id"))
@@ -81,6 +82,7 @@ describe("createRpc", () => {
 
 		const response = await app.request("/rpc/path/to/file/someMethod", {
 			method: "POST",
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(["hello", "world"]),
 		})
 
@@ -99,6 +101,7 @@ describe("createRpc", () => {
 
 		const response = await app.request("/rpc/path/to/file/someMethod", {
 			method: "POST",
+			headers: { "Content-Type": "application/json" },
 			body: "invalid json",
 		})
 
@@ -112,6 +115,7 @@ describe("createRpc", () => {
 
 		const response = await app.request("/rpc/path/to/file/someMethod", {
 			method: "POST",
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ hello: "world" }),
 		})
 
@@ -129,11 +133,60 @@ describe("createRpc", () => {
 
 		const response = await app.request("/rpc/path/to/file/someMethod", {
 			method: "POST",
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(["hello", "world"]),
 		})
 
 		assert.strictEqual(response.status, 204)
 
 		assert.strictEqual(response.body, null)
+	})
+
+	it("calls onRequest with the Hono context", async () => {
+		const onRequest = mock.fn<OnRequest>()
+
+		const app = await getApp({ onRequest })
+
+		assert.strictEqual(onRequest.mock.callCount(), 0)
+
+		await app.request("/rpc/path/to/file/someMethod", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(["hello", "world"]),
+		})
+
+		assert.strictEqual(onRequest.mock.callCount(), 1)
+
+		const ctx = onRequest.mock.calls[0]!.arguments[0]
+
+		assert.strictEqual(ctx.req.method, "POST")
+		assert.strictEqual(ctx.req.path, "/rpc/path/to/file/someMethod")
+	})
+
+	it("calls onError with the Hono context and the error", async () => {
+		const onError = mock.fn<OnError>()
+
+		const app = await getApp({ onError })
+
+		assert.strictEqual(onError.mock.callCount(), 0)
+
+		procedure.mock.mockImplementationOnce(async () =>
+			Promise.reject(new Error("fake_error")),
+		)
+
+		await app.request("/rpc/path/to/file/someMethod", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(["hello", "world"]),
+		})
+
+		assert.strictEqual(onError.mock.callCount(), 1)
+
+		const [ctx, error] = onError.mock.calls[0]!.arguments
+
+		assert.strictEqual(ctx.req.method, "POST")
+		assert.strictEqual(ctx.req.path, "/rpc/path/to/file/someMethod")
+
+		assert.deepEqual(error, new Error("fake_error"))
 	})
 })
