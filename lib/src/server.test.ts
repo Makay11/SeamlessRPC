@@ -59,4 +59,35 @@ describe("createRpc", () => {
 			},
 		])
 	})
+
+	void it.skip("imports matching files and allows calling procedures by id", async (t) => {
+		glob.mock.mockImplementationOnce(async () =>
+			Promise.resolve(["path/to/file.js"]),
+		)
+
+		// TODO this fails with ERR_MODULE_NOT_FOUND
+		t.mock.module("/fake/path/to/file.js", {
+			namedExports: {
+				async someMethod(arg0: string, arg1: string) {
+					return Promise.resolve({ arg0, arg1 })
+				},
+			},
+		})
+
+		const rpc = await createRpc({
+			rootDir: "/fake",
+		})
+
+		assert.deepStrictEqual(
+			await rpc("path/to/file/someMethod", ["hello", "world"]),
+			{
+				arg0: "hello",
+				arg1: "world",
+			},
+		)
+	})
+
+	void it.todo(
+		"imports matching files and allows calling procedures by hashed id",
+	)
 })
