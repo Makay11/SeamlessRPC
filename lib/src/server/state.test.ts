@@ -14,12 +14,7 @@ describe("runWithStore", () => {
 	it("throws if there is a nested call", () => {
 		assert.throws(() => {
 			runWithStore(() => {
-				runWithStore(
-					/* node:coverage ignore next 3 */
-					() => {
-						// do nothing
-					},
-				)
+				runWithStore(noop)
 			})
 		}, new Error("Store has already been created."))
 	})
@@ -156,3 +151,8 @@ describe("defineState", () => {
 		})
 	})
 })
+
+/* node:coverage ignore next 3 */
+function noop() {
+	// do nothing
+}

@@ -27,9 +27,7 @@ describe("useSubscription", () => {
 		const { isSubscribed, isSubscribing, subscribe, unsubscribe } =
 			useSubscription({
 				source: async () => Promise.resolve(new ReadableStream()),
-				onData() {
-					// do nothing
-				},
+				onData: noop,
 			})
 
 		assert.strictEqual(isSubscribed.value, false)
@@ -54,9 +52,7 @@ describe("useSubscription", () => {
 	it("throws if subscribe is called while already subscribing", async () => {
 		const { isSubscribed, isSubscribing, subscribe } = useSubscription({
 			source: async () => Promise.resolve(new ReadableStream()),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 		})
 
 		const promise = subscribe()
@@ -72,9 +68,7 @@ describe("useSubscription", () => {
 	it("throws if subscribe is called while already subscribed", async () => {
 		const { isSubscribed, isSubscribing, subscribe } = useSubscription({
 			source: async () => Promise.resolve(new ReadableStream()),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 		})
 
 		await subscribe()
@@ -88,9 +82,7 @@ describe("useSubscription", () => {
 	it("sets the flags correctly when subscribe fails", async () => {
 		const { isSubscribed, isSubscribing, subscribe } = useSubscription({
 			source: async () => Promise.reject(new Error("Failed to subscribe.")),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 		})
 
 		assert.strictEqual(isSubscribed.value, false)
@@ -112,9 +104,7 @@ describe("useSubscription", () => {
 
 		const { isSubscribed, isSubscribing, subscribe } = useSubscription({
 			source: async () => Promise.resolve(new ReadableStream()),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 		})
 
 		assert.strictEqual(onBeforeUnmount.mock.callCount(), 1)
@@ -189,9 +179,7 @@ describe("useSubscription", () => {
 
 		const { subscribe } = useSubscription({
 			source: async () => Promise.resolve(stream),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 			onClose,
 		})
 
@@ -221,9 +209,7 @@ describe("useSubscription", () => {
 
 		const { subscribe } = useSubscription({
 			source: async () => Promise.resolve(stream),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 			onError,
 		})
 
@@ -253,15 +239,11 @@ describe("useSubscription", () => {
 			},
 		})
 
-		const consoleError = t.mock.method(console, "error", () => {
-			// do nothing
-		})
+		const consoleError = t.mock.method(console, "error", noop)
 
 		const { subscribe } = useSubscription({
 			source: async () => Promise.resolve(stream),
-			onData() {
-				// do nothing
-			},
+			onData: noop,
 		})
 
 		await subscribe()
@@ -281,3 +263,7 @@ describe("useSubscription", () => {
 		])
 	})
 })
+
+function noop() {
+	// do nothing
+}
