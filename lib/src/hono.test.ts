@@ -1,6 +1,7 @@
 import assert from "node:assert"
 import { beforeEach, describe, it, mock } from "node:test"
 
+import { EventSourceParserStream } from "eventsource-parser/stream"
 import { Hono } from "hono"
 
 import type { OnError, OnRequest, Options } from "./hono.ts"
@@ -287,5 +288,61 @@ describe("createRpc", () => {
 		assert.strictEqual(response.status, 200)
 
 		assert.strictEqual(await response.json(), "/rpc/path/to/file/someMethod")
+	})
+
+	describe("SSE", () => {
+		const encoder = new TextEncoder()
+
+		it("returns an event stream when the procedure returns a ReadableStream", async () => {
+			procedure.mock.mockImplementationOnce(async () => {
+				return Promise.resolve(new ReadableStream())
+			})
+
+			const app = await getApp()
+
+			const response = await app.request("/rpc/path/to/file/someMethod", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(["hello", "world"]),
+			})
+
+			assert.strictEqual(response.status, 200)
+
+			assert.strictEqual(
+				response.headers.get("Content-Type"),
+				"text/event-stream",
+			)
+		})
+
+		it("emits the connected event automatically upon connection", async () => {
+			procedure.mock.mockImplementationOnce(async () => {
+				return Promise.resolve(new ReadableStream())
+			})
+
+			const app = await getApp()
+
+			const response = await app.request("/rpc/path/to/file/someMethod", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(["hello", "world"]),
+			})
+
+			assert.strictEqual(response.status, 200)
+
+			const eventStream = response
+				.body!.pipeThrough(new TextDecoderStream())
+				.pipeThrough(new EventSourceParserStream())
+
+			const reader = eventStream.getReader()
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: "connected",
+					data: "",
+				},
+			})
+		})
 	})
 })
