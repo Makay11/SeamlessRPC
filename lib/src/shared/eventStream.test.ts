@@ -8,11 +8,11 @@ describe("eventStream", () => {
 		const cleanup = mock.fn()
 
 		const stream = eventStream(({ enqueue, close }) => {
-			setTimeout(() => {
+			setImmediate(() => {
 				enqueue("hello")
 				enqueue("world")
 				close()
-			}, 0)
+			})
 
 			return cleanup
 		})
@@ -34,9 +34,9 @@ describe("eventStream", () => {
 		const cleanup = mock.fn()
 
 		const stream = eventStream(({ error }) => {
-			setTimeout(() => {
+			setImmediate(() => {
 				error(new Error("boom"))
-			}, 0)
+			})
 
 			return cleanup
 		})

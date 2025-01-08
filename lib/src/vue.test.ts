@@ -1,8 +1,8 @@
 import assert from "node:assert"
 import { beforeEach, describe, it, mock } from "node:test"
-import { setTimeout } from "node:timers/promises"
+import { scheduler } from "node:timers/promises"
 
-const { computed, shallowRef } = await import("vue")
+import { computed, shallowRef } from "vue"
 
 const onBeforeUnmount = mock.fn<(callback: () => void) => void>()
 
@@ -121,14 +121,14 @@ describe("useSubscription", () => {
 
 		const callback = onBeforeUnmount.mock.calls[0]!.arguments[0]
 
-		await setTimeout(100)
+		await scheduler.yield()
 
 		assert.strictEqual(isSubscribed.value, true)
 		assert.strictEqual(isSubscribing.value, false)
 
 		callback()
 
-		await setTimeout(100)
+		await scheduler.yield()
 
 		assert.strictEqual(isSubscribed.value, false)
 		assert.strictEqual(isSubscribing.value, false)
