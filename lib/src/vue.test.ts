@@ -4,6 +4,8 @@ import { scheduler } from "node:timers/promises"
 
 import { computed, shallowRef } from "vue"
 
+import type { OnData } from "./vue.ts"
+
 const onBeforeUnmount = mock.fn<(callback: () => void) => void>()
 
 beforeEach(() => {
@@ -132,5 +134,150 @@ describe("useSubscription", () => {
 
 		assert.strictEqual(isSubscribed.value, false)
 		assert.strictEqual(isSubscribing.value, false)
+	})
+
+	it("calls onData with the enqueued data", async () => {
+		let controller: ReadableStreamDefaultController<string>
+
+		const stream = new ReadableStream<string>({
+			start(_controller) {
+				controller = _controller
+			},
+		})
+
+		const onData = mock.fn<OnData<string>>()
+
+		const { subscribe } = useSubscription({
+			source: async () => Promise.resolve(stream),
+			onData,
+		})
+
+		await subscribe()
+
+		await scheduler.yield()
+
+		assert.strictEqual(onData.mock.callCount(), 0)
+
+		controller!.enqueue("hello")
+
+		await scheduler.yield()
+
+		assert.strictEqual(onData.mock.callCount(), 1)
+
+		controller!.enqueue("world")
+
+		await scheduler.yield()
+
+		assert.strictEqual(onData.mock.callCount(), 2)
+
+		assert.deepStrictEqual(
+			onData.mock.calls.map((call) => call.arguments),
+			[["hello"], ["world"]],
+		)
+	})
+
+	it("calls onClose when the stream closes", async () => {
+		let controller: ReadableStreamDefaultController<string>
+
+		const stream = new ReadableStream<string>({
+			start(_controller) {
+				controller = _controller
+			},
+		})
+
+		const onClose = mock.fn()
+
+		const { subscribe } = useSubscription({
+			source: async () => Promise.resolve(stream),
+			onData() {
+				// do nothing
+			},
+			onClose,
+		})
+
+		await subscribe()
+
+		await scheduler.yield()
+
+		assert.strictEqual(onClose.mock.callCount(), 0)
+
+		controller!.close()
+
+		await scheduler.yield()
+
+		assert.strictEqual(onClose.mock.callCount(), 1)
+	})
+
+	it("calls onError when the stream errors", async () => {
+		let controller: ReadableStreamDefaultController<string>
+
+		const stream = new ReadableStream<string>({
+			start(_controller) {
+				controller = _controller
+			},
+		})
+
+		const onError = mock.fn()
+
+		const { subscribe } = useSubscription({
+			source: async () => Promise.resolve(stream),
+			onData() {
+				// do nothing
+			},
+			onError,
+		})
+
+		await subscribe()
+
+		await scheduler.yield()
+
+		assert.strictEqual(onError.mock.callCount(), 0)
+
+		controller!.error(new Error("some_error"))
+
+		await scheduler.yield()
+
+		assert.strictEqual(onError.mock.callCount(), 1)
+
+		assert.deepStrictEqual(onError.mock.calls[0]!.arguments, [
+			new Error("some_error"),
+		])
+	})
+
+	it("defaults to console.error for onError", async (t) => {
+		let controller: ReadableStreamDefaultController<string>
+
+		const stream = new ReadableStream<string>({
+			start(_controller) {
+				controller = _controller
+			},
+		})
+
+		const consoleError = t.mock.method(console, "error", () => {
+			// do nothing
+		})
+
+		const { subscribe } = useSubscription({
+			source: async () => Promise.resolve(stream),
+			onData() {
+				// do nothing
+			},
+		})
+
+		await subscribe()
+
+		await scheduler.yield()
+
+		assert.strictEqual(consoleError.mock.callCount(), 0)
+
+		controller!.error(new Error("some_error"))
+
+		await scheduler.yield()
+
+		assert.strictEqual(consoleError.mock.callCount(), 1)
+
+		assert.deepStrictEqual(consoleError.mock.calls[0]!.arguments, [
+			new Error("some_error"),
+		])
 	})
 })
