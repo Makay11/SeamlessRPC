@@ -34,7 +34,7 @@ mock.module("./server.ts", {
 	},
 })
 
-const { createRpc } = await import("./hono.ts")
+const { createRpc, useContext } = await import("./hono.ts")
 
 async function getApp(options?: Options) {
 	const rpc = await createRpc(options)
@@ -263,5 +263,29 @@ describe("createRpc", () => {
 		assert.deepStrictEqual(consoleError.mock.calls[0]!.arguments, [
 			new Error("fake_error"),
 		])
+	})
+
+	it("allows accessing the context with useContext in a procedure", async () => {
+		assert.throws(() => {
+			useContext()
+		}, new Error("Store has not been created."))
+
+		procedure.mock.mockImplementationOnce(async () => {
+			const ctx = useContext()
+
+			return Promise.resolve(ctx.req.path)
+		})
+
+		const app = await getApp()
+
+		const response = await app.request("/rpc/path/to/file/someMethod", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(["hello", "world"]),
+		})
+
+		assert.strictEqual(response.status, 200)
+
+		assert.strictEqual(await response.json(), "/rpc/path/to/file/someMethod")
 	})
 })
