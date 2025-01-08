@@ -35,7 +35,13 @@ export async function createRpc({ onRequest, onError, files }: Options = {}) {
 					await onRequest(ctx)
 				}
 
-				const args = await ctx.req.json<JsonValue>()
+				let args
+
+				try {
+					args = await ctx.req.json<JsonValue>()
+				} catch {
+					throw new InvalidRequestBodyError()
+				}
 
 				if (!Array.isArray(args)) {
 					throw new InvalidRequestBodyError()
