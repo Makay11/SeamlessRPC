@@ -16,15 +16,21 @@ const _createRpc = mock.fn<typeof server.createRpc>(async () =>
 	}),
 )
 
+const getHttpStatusCode = mock.fn<typeof server.getHttpStatusCode>(
+	server.getHttpStatusCode,
+)
+
 beforeEach(() => {
 	procedure.mock.resetCalls()
 	_createRpc.mock.resetCalls()
+	getHttpStatusCode.mock.resetCalls()
 })
 
 mock.module("./server.ts", {
 	namedExports: {
 		...server,
 		createRpc: _createRpc,
+		getHttpStatusCode,
 	},
 })
 
@@ -188,5 +194,29 @@ describe("createRpc", () => {
 		assert.strictEqual(ctx.req.path, "/rpc/path/to/file/someMethod")
 
 		assert.deepEqual(error, new Error("fake_error"))
+	})
+
+	it("returns the status code of the RpcError when the procedure throws an RpcError", async () => {
+		procedure.mock.mockImplementationOnce(async () =>
+			Promise.reject(new server.RpcError("fake_rpc_error")),
+		)
+
+		const app = await getApp()
+
+		assert.strictEqual(getHttpStatusCode.mock.callCount(), 0)
+
+		const response = await app.request("/rpc/path/to/file/someMethod", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(["hello", "world"]),
+		})
+
+		assert.strictEqual(getHttpStatusCode.mock.callCount(), 1)
+
+		assert.strictEqual(response.status, 500)
+
+		const rpcError = getHttpStatusCode.mock.calls[0]!.arguments[0]
+
+		assert(rpcError instanceof server.RpcError)
 	})
 })
