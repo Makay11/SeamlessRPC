@@ -44,6 +44,10 @@ async function getApp(options?: Options) {
 	})
 }
 
+function noop() {
+	// do nothing
+}
+
 describe("createRpc", () => {
 	it("initializes", async () => {
 		assert.strictEqual(_createRpc.mock.callCount(), 0)
@@ -169,22 +173,28 @@ describe("createRpc", () => {
 		assert.strictEqual(ctx.req.path, "/rpc/path/to/file/someMethod")
 	})
 
-	it("calls onError with the Hono context and the error", async () => {
-		const onError = mock.fn<OnError>()
+	it("calls onError with the Hono context and the error", async (t) => {
+		procedure.mock.mockImplementationOnce(async () =>
+			Promise.reject(new Error("fake_error")),
+		)
+
+		const onError = mock.fn<OnError>(async () =>
+			Promise.reject(new Error("different_error")),
+		)
+
+		const consoleError = t.mock.method(console, "error", noop)
 
 		const app = await getApp({ onError })
 
 		assert.strictEqual(onError.mock.callCount(), 0)
 
-		procedure.mock.mockImplementationOnce(async () =>
-			Promise.reject(new Error("fake_error")),
-		)
-
-		await app.request("/rpc/path/to/file/someMethod", {
+		const response = await app.request("/rpc/path/to/file/someMethod", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(["hello", "world"]),
 		})
+
+		assert.strictEqual(response.status, 500)
 
 		assert.strictEqual(onError.mock.callCount(), 1)
 
@@ -194,6 +204,13 @@ describe("createRpc", () => {
 		assert.strictEqual(ctx.req.path, "/rpc/path/to/file/someMethod")
 
 		assert.deepEqual(error, new Error("fake_error"))
+
+		assert.strictEqual(consoleError.mock.callCount(), 1)
+
+		assert.deepStrictEqual(
+			consoleError.mock.calls[0]!.arguments[0],
+			new Error("different_error"),
+		)
 	})
 
 	it("returns the status code of the RpcError when the procedure throws an RpcError", async () => {
@@ -211,12 +228,40 @@ describe("createRpc", () => {
 			body: JSON.stringify(["hello", "world"]),
 		})
 
-		assert.strictEqual(getHttpStatusCode.mock.callCount(), 1)
-
 		assert.strictEqual(response.status, 500)
+
+		assert.strictEqual(getHttpStatusCode.mock.callCount(), 1)
 
 		const rpcError = getHttpStatusCode.mock.calls[0]!.arguments[0]
 
 		assert(rpcError instanceof server.RpcError)
+	})
+
+	it("returns the original error when the procedure throws an Error", async (t) => {
+		procedure.mock.mockImplementationOnce(async () =>
+			Promise.reject(new Error("fake_error")),
+		)
+
+		const consoleError = t.mock.method(console, "error", noop)
+
+		const app = await getApp()
+
+		assert.strictEqual(getHttpStatusCode.mock.callCount(), 0)
+
+		const response = await app.request("/rpc/path/to/file/someMethod", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(["hello", "world"]),
+		})
+
+		assert.strictEqual(response.status, 500)
+
+		assert.strictEqual(getHttpStatusCode.mock.callCount(), 0)
+
+		assert.strictEqual(consoleError.mock.callCount(), 1)
+
+		assert.deepStrictEqual(consoleError.mock.calls[0]!.arguments, [
+			new Error("fake_error"),
+		])
 	})
 })

@@ -22,6 +22,10 @@ mock.module("vue", {
 
 const { useSubscription } = await import("./vue.ts")
 
+function noop() {
+	// do nothing
+}
+
 describe("useSubscription", () => {
 	it("subscribes and unsubscribes", async () => {
 		const { isSubscribed, isSubscribing, subscribe, unsubscribe } =
@@ -263,7 +267,3 @@ describe("useSubscription", () => {
 		])
 	})
 })
-
-function noop() {
-	// do nothing
-}
