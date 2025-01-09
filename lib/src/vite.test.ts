@@ -3,6 +3,11 @@ import { describe, it } from "node:test"
 
 import type { UserConfig } from "vite"
 
+import {
+	DEFAULT_EXCLUDE,
+	DEFAULT_INCLUDE,
+	DEFAULT_ROOT_DIR,
+} from "./shared/defaults.ts"
 import { rpc } from "./vite.ts"
 
 describe("rpc", () => {
@@ -38,6 +43,29 @@ describe("rpc", () => {
 		plugin.config(config)
 
 		assert.deepStrictEqual(config.define, {
+			$MAKAY_RPC_URL: '"/rpc/v1"',
+			$MAKAY_RPC_CREDENTIALS: '"include"',
+			$MAKAY_RPC_SSE: "true",
+		})
+	})
+
+	it("preserves existing config.define values", () => {
+		const plugin = rpc({
+			url: "/rpc/v1",
+			credentials: "include",
+			sse: true,
+		})
+
+		const config: UserConfig = {
+			define: {
+				foo: '"bar"',
+			},
+		}
+
+		plugin.config(config)
+
+		assert.deepStrictEqual(config.define, {
+			foo: '"bar"',
 			$MAKAY_RPC_URL: '"/rpc/v1"',
 			$MAKAY_RPC_CREDENTIALS: '"include"',
 			$MAKAY_RPC_SSE: "true",
