@@ -1,6 +1,6 @@
 import { relative, resolve } from "node:path"
 
-import { createFilter, parseAstAsync, type PluginOption } from "vite"
+import { createFilter, parseAstAsync, type Plugin } from "vite"
 
 import {
 	DEFAULT_EXCLUDE,
@@ -19,6 +19,11 @@ export type Options = {
 	hashPaths?: boolean | undefined
 }
 
+export type TransformPluginContext = ThisParameterType<
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+	Extract<Plugin["transform"], Function>
+>
+
 export function rpc({
 	url = "/rpc",
 	credentials = "same-origin",
@@ -27,7 +32,7 @@ export function rpc({
 	include = DEFAULT_INCLUDE,
 	exclude = DEFAULT_EXCLUDE,
 	hashPaths,
-}: Options = {}): PluginOption {
+}: Options = {}) {
 	let filter: (id: string) => boolean
 
 	const _import = 'import { rpc } from "@makay/rpc/client"'
@@ -72,7 +77,7 @@ export function rpc({
 			)
 		},
 
-		async transform(code, id) {
+		async transform(this: TransformPluginContext, code, id) {
 			if (!filter(id)) return
 
 			const program = await parseAstAsync(code)
@@ -113,5 +118,5 @@ export function rpc({
 
 			return `${_import}\n${exports.join("\n")}\n`
 		},
-	}
+	} as const satisfies Plugin
 }
