@@ -8,7 +8,9 @@ import type { OnError, OnRequest, Options } from "./hono.ts"
 import * as server from "./server.ts"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const procedure = mock.fn<(...args: Array<any>) => Promise<any>>()
+const procedure = mock.fn<(...args: Array<any>) => Promise<any>>(() => {
+	throw new Error("Missing mock implementation.")
+})
 
 const _createRpc = mock.fn<typeof server.createRpc>(async () =>
 	Promise.resolve(async (_procedureId, args) => {
@@ -154,6 +156,10 @@ describe("createRpc", () => {
 	})
 
 	it("calls onRequest with the Hono context", async () => {
+		procedure.mock.mockImplementationOnce(async () =>
+			Promise.resolve(undefined),
+		)
+
 		const onRequest = mock.fn<OnRequest>()
 
 		const app = await getApp({ onRequest })
@@ -291,8 +297,6 @@ describe("createRpc", () => {
 	})
 
 	describe("SSE", () => {
-		const encoder = new TextEncoder()
-
 		it("returns an event stream when the procedure returns a ReadableStream", async () => {
 			procedure.mock.mockImplementationOnce(async () => {
 				return Promise.resolve(new ReadableStream())
@@ -343,6 +347,178 @@ describe("createRpc", () => {
 					data: "",
 				},
 			})
+		})
+
+		it("emits the events enqueued to the stream", async () => {
+			procedure.mock.mockImplementationOnce(async () => {
+				const stream = new ReadableStream({
+					start(controller) {
+						controller.enqueue("hello")
+						controller.enqueue("world")
+					},
+				})
+
+				return Promise.resolve(stream)
+			})
+
+			const app = await getApp()
+
+			const response = await app.request("/rpc/path/to/file/someMethod", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(["hello", "world"]),
+			})
+
+			assert.strictEqual(response.status, 200)
+
+			const eventStream = response
+				.body!.pipeThrough(new TextDecoderStream())
+				.pipeThrough(new EventSourceParserStream())
+
+			const reader = eventStream.getReader()
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: "connected",
+					data: "",
+				},
+			})
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: undefined,
+					data: '"hello"',
+				},
+			})
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: undefined,
+					data: '"world"',
+				},
+			})
+		})
+
+		it("closes the event stream when the procedure stream closes", async () => {
+			procedure.mock.mockImplementationOnce(async () => {
+				const stream = new ReadableStream<string>({
+					start(controller) {
+						controller.close()
+					},
+				})
+
+				return Promise.resolve(stream)
+			})
+
+			const app = await getApp()
+
+			const response = await app.request("/rpc/path/to/file/someMethod", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(["hello", "world"]),
+			})
+
+			assert.strictEqual(response.status, 200)
+
+			const eventStream = response
+				.body!.pipeThrough(new TextDecoderStream())
+				.pipeThrough(new EventSourceParserStream())
+
+			const reader = eventStream.getReader()
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: "connected",
+					data: "",
+				},
+			})
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: true,
+				value: undefined,
+			})
+		})
+
+		it("sends an error event when the procedure stream errors", async () => {
+			const stream = new ReadableStream<string>({
+				start(controller) {
+					controller.error(new Error("fake_error"))
+				},
+			})
+
+			procedure.mock.mockImplementationOnce(async () => {
+				return Promise.resolve(stream)
+			})
+
+			const app = await getApp()
+
+			const response = await app.request("/rpc/path/to/file/someMethod", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(["hello", "world"]),
+			})
+
+			assert.strictEqual(response.status, 200)
+
+			const eventStream = response
+				.body!.pipeThrough(new TextDecoderStream())
+				.pipeThrough(new EventSourceParserStream())
+
+			const reader = eventStream.getReader()
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: "connected",
+					data: "",
+				},
+			})
+
+			assert.deepStrictEqual(await reader.read(), {
+				done: false,
+				value: {
+					id: undefined,
+					event: "error",
+					data: "fake_error",
+				},
+			})
+		})
+
+		it("cancels the procedure stream when the event stream is cancelled", async () => {
+			let canceled = false
+
+			procedure.mock.mockImplementationOnce(async () =>
+				Promise.resolve(
+					new ReadableStream({
+						cancel() {
+							canceled = true
+						},
+					}),
+				),
+			)
+
+			const app = await getApp()
+
+			const response = await app.request("/rpc/path/to/file/someMethod", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(["hello", "world"]),
+			})
+
+			assert.strictEqual(response.status, 200)
+
+			await response.body!.cancel()
+
+			assert.strictEqual(canceled, true)
 		})
 	})
 })
