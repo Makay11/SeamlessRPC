@@ -8,9 +8,12 @@ import type { OnError, OnRequest, Options } from "./hono.ts"
 import * as server from "./server.ts"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const procedure = mock.fn<(...args: Array<any>) => Promise<any>>(() => {
-	throw new Error("Missing mock implementation.")
-})
+const procedure = mock.fn<(...args: Array<any>) => Promise<any>>(
+	/* node:coverage ignore next 3 */
+	() => {
+		throw new Error("Missing mock implementation.")
+	},
+)
 
 const _createRpc = mock.fn<typeof server.createRpc>(async () =>
 	Promise.resolve(async (_procedureId, args) => {
