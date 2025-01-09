@@ -24,6 +24,8 @@ export type TransformPluginContext = ThisParameterType<
 	Extract<Plugin["transform"], Function>
 >
 
+type CreateExport = (id: string, name: string) => string
+
 export function rpc({
 	url = "/rpc",
 	credentials = "same-origin",
@@ -37,20 +39,7 @@ export function rpc({
 
 	const _import = 'import { rpc } from "@makay/rpc/client"'
 
-	let createExport: (id: string, name: string) => string
-
-	function createExportFactory(
-		rootPath: string,
-		hashPaths: boolean,
-	): typeof createExport {
-		const transformer = hashPaths ? getHashedProcedureId : getProcedureId
-
-		return (id, name) => {
-			const path = relative(rootPath, id)
-
-			return `export const ${name} = rpc("${transformer(path, name)}")`
-		}
-	}
+	let createExport: CreateExport
 
 	return {
 		name: "@makay/rpc",
@@ -119,4 +108,17 @@ export function rpc({
 			return `${_import}\n${exports.join("\n")}\n`
 		},
 	} as const satisfies Plugin
+}
+
+function createExportFactory(
+	rootPath: string,
+	hashPaths: boolean,
+): CreateExport {
+	const transformer = hashPaths ? getHashedProcedureId : getProcedureId
+
+	return (id, name) => {
+		const path = relative(rootPath, id)
+
+		return `export const ${name} = rpc("${transformer(path, name)}")`
+	}
 }

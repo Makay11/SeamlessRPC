@@ -71,4 +71,15 @@ describe("rpc", () => {
 			$MAKAY_RPC_SSE: "true",
 		})
 	})
+
+	// TODO create filter with default values
+	// TODO create filter with custom values
+	// TODO transform file
+	// TODO respect rootDir
+	// TODO respect include
+	// TODO respect exclude
+	// TODO respect hashPaths
+	// TODO respect config.mode
+	// TODO handle all export scenarios
+	// TODO handle no procedures
 })
