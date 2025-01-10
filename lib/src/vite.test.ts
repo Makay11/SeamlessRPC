@@ -26,7 +26,7 @@ mock.module("vite", {
 const { rpc } = await import("./vite.ts")
 
 describe("rpc", () => {
-	it("should return a vite plugin", () => {
+	it("returns a vite plugin", () => {
 		const plugin = rpc()
 
 		assert.strictEqual(plugin.name, "@makay/rpc")
@@ -87,8 +87,7 @@ describe("rpc", () => {
 		})
 	})
 
-	// TODO create filter with default values
-	it("should create a filter with default values", () => {
+	it("creates a filter with default values", () => {
 		const plugin = rpc()
 
 		assert.strictEqual(createFilter.mock.callCount(), 0)
@@ -118,8 +117,7 @@ describe("rpc", () => {
 		assert.strictEqual(filter("/random-root/src/foo.server.ts"), false)
 	})
 
-	// TODO create filter with custom values
-	it("should create a filter with custom values", () => {
+	it("creates a filter with custom values", () => {
 		const plugin = rpc({
 			rootDir: "custom-dir",
 			include: "./**/*.custom.ts",
@@ -146,8 +144,7 @@ describe("rpc", () => {
 		])
 	})
 
-	// TODO transform file
-	it("should transform a file", async () => {
+	it("transforms a file", async () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -181,8 +178,7 @@ export const hello = rpc("foo.server/hello")
 		)
 	})
 
-	// TODO respect hashPaths
-	it("should transform a file with hashed paths", async () => {
+	it("transforms a file with hashed paths when hashPaths is true", async () => {
 		const plugin = rpc({
 			rootDir: "src",
 			hashPaths: true,
@@ -190,6 +186,7 @@ export const hello = rpc("foo.server/hello")
 
 		plugin.configResolved({
 			root: "/root",
+			mode: "development",
 		} as ResolvedConfig)
 
 		const code = `
@@ -216,7 +213,94 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 		)
 	})
 
-	// TODO respect config.mode
+	it("transforms a file with hashed paths when hashPaths is undefined and config.mode is production", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "production",
+		} as ResolvedConfig)
+
+		const code = `
+			export async function bar() {
+				return "baz"
+			}
+
+			export async function hello() {
+				return "world"
+			}
+		`
+
+		const transformedCode = await plugin.transform(
+			code,
+			"/root/src/foo.server.ts",
+		)
+
+		assert.strictEqual(
+			transformedCode,
+			`import { rpc } from "@makay/rpc/client"
+export const bar = rpc("-5KgEd_NKIC7DUMm/bar")
+export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
+`,
+		)
+	})
+
+	it("transforms a file without hashed paths when hashPaths is false and config.mode is production", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+			hashPaths: false,
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "production",
+		} as ResolvedConfig)
+
+		const code = `
+			export async function bar() {
+				return "baz"
+			}
+
+			export async function hello() {
+				return "world"
+			}
+		`
+
+		const transformedCode = await plugin.transform(
+			code,
+			"/root/src/foo.server.ts",
+		)
+
+		assert.strictEqual(
+			transformedCode,
+			`import { rpc } from "@makay/rpc/client"
+export const bar = rpc("foo.server/bar")
+export const hello = rpc("foo.server/hello")
+`,
+		)
+	})
+
 	// TODO handle all export scenarios
-	// TODO handle no procedures
+
+	it("transforms a file with no procedures", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = ``
+
+		const transformedCode = await plugin.transform(
+			code,
+			"/root/src/foo.server.ts",
+		)
+
+		assert.strictEqual(transformedCode, `export {}`)
+	})
 })
