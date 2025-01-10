@@ -178,6 +178,31 @@ export const hello = rpc("foo.server/hello")
 		)
 	})
 
+	it("does not transform filtered out files", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+			exclude: ["**/excluded/**"],
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `
+			export async function bar() {
+				return "baz"
+			}
+		`
+
+		const transformedCode = await plugin.transform(
+			code,
+			"/root/src/excluded/foo.server.ts",
+		)
+
+		assert.strictEqual(transformedCode, undefined)
+	})
+
 	it("transforms a file with hashed paths when hashPaths is true", async () => {
 		const plugin = rpc({
 			rootDir: "src",
@@ -282,7 +307,119 @@ export const hello = rpc("foo.server/hello")
 		)
 	})
 
-	// TODO handle all export scenarios
+	it("rejects default exports", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `
+		export default async function foo() {
+			return "bar"
+		}
+	`
+
+		await assert.rejects(
+			plugin.transform(code, "/root/src/foo.server.ts"),
+			new Error("Default exports are not allowed."),
+		)
+	})
+
+	it("rejects export all declarations", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `export * from "./other"`
+
+		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+			message: "All exports must be local plain async functions.",
+		})
+	})
+
+	it("rejects indirect exports", async () => {
+		const plugin = rpc({ rootDir: "src" })
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `
+		async function foo() {
+			return "bar"
+		}
+		export { foo }
+	`
+
+		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+			message: "All exports must be local plain async functions.",
+		})
+	})
+
+	it("rejects non-function named exports", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `export const foo = "bar"`
+
+		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+			message: "All exports must be local plain async functions.",
+		})
+	})
+
+	it("rejects non-async function exports", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `
+		export function foo() {
+			return "bar"
+		}
+	`
+
+		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+			message: "All exports must be local plain async functions.",
+		})
+	})
+
+	it("rejects async generator function exports", async () => {
+		const plugin = rpc({ rootDir: "src" })
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `
+		export async function* foo() {
+			yield "bar"
+		}
+	`
+
+		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+			message: "All exports must be local plain async functions.",
+		})
+	})
 
 	it("transforms a file with no procedures", async () => {
 		const plugin = rpc({
