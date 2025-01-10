@@ -182,6 +182,40 @@ export const hello = rpc("foo.server/hello")
 	})
 
 	// TODO respect hashPaths
+	it("should transform a file with hashed paths", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+			hashPaths: true,
+		})
+
+		plugin.configResolved({
+			root: "/root",
+		} as ResolvedConfig)
+
+		const code = `
+			export async function bar() {
+				return "baz"
+			}
+
+			export async function hello() {
+				return "world"
+			}
+		`
+
+		const transformedCode = await plugin.transform(
+			code,
+			"/root/src/foo.server.ts",
+		)
+
+		assert.strictEqual(
+			transformedCode,
+			`import { rpc } from "@makay/rpc/client"
+export const bar = rpc("-5KgEd_NKIC7DUMm/bar")
+export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
+`,
+		)
+	})
+
 	// TODO respect config.mode
 	// TODO handle all export scenarios
 	// TODO handle no procedures
