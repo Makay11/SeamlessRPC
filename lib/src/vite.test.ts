@@ -100,7 +100,7 @@ describe("rpc", () => {
 
 		assert.strictEqual(createFilter.mock.callCount(), 1)
 
-		const args = createFilter.mock.calls[0]!.arguments
+		const { arguments: args, result: filter } = createFilter.mock.calls[0]!
 
 		assert.deepStrictEqual(args, [
 			DEFAULT_INCLUDE,
@@ -109,6 +109,13 @@ describe("rpc", () => {
 				resolve: `/root/${DEFAULT_ROOT_DIR}`,
 			},
 		])
+
+		assert(filter != null)
+
+		assert.strictEqual(filter(`/root/${DEFAULT_ROOT_DIR}/foo.server.ts`), true)
+
+		assert.strictEqual(filter("/root/random-dir/foo.server.ts"), false)
+		assert.strictEqual(filter("/random-root/src/foo.server.ts"), false)
 	})
 
 	// TODO create filter with custom values
