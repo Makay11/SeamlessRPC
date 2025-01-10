@@ -1,14 +1,29 @@
 import assert from "node:assert"
-import { describe, it } from "node:test"
+import { beforeEach, describe, it, mock } from "node:test"
 
-import type { UserConfig } from "vite"
+import type { ResolvedConfig, UserConfig } from "vite"
+import * as vite from "vite"
 
 import {
 	DEFAULT_EXCLUDE,
 	DEFAULT_INCLUDE,
 	DEFAULT_ROOT_DIR,
 } from "./shared/defaults.ts"
-import { rpc } from "./vite.ts"
+
+const createFilter = mock.fn(vite.createFilter)
+
+beforeEach(() => {
+	createFilter.mock.resetCalls()
+})
+
+mock.module("vite", {
+	namedExports: {
+		...vite,
+		createFilter,
+	},
+})
+
+const { rpc } = await import("./vite.ts")
 
 describe("rpc", () => {
 	it("should return a vite plugin", () => {
@@ -72,8 +87,60 @@ describe("rpc", () => {
 		})
 	})
 
-	// TODO create filter with default values
-	// TODO create filter with custom values
+	it("should create a filter with default values", () => {
+		const plugin = rpc()
+
+		const config: Partial<ResolvedConfig> = {
+			root: "/root",
+			mode: "development",
+		}
+
+		assert.strictEqual(createFilter.mock.callCount(), 0)
+
+		plugin.configResolved(config as ResolvedConfig)
+
+		assert.strictEqual(createFilter.mock.callCount(), 1)
+
+		const args = createFilter.mock.calls[0]!.arguments
+
+		assert.deepStrictEqual(args, [
+			DEFAULT_INCLUDE,
+			DEFAULT_EXCLUDE,
+			{
+				resolve: `/root/${DEFAULT_ROOT_DIR}`,
+			},
+		])
+	})
+
+	it("should create a filter with custom values", () => {
+		const plugin = rpc({
+			rootDir: "custom-dir",
+			include: "**/*.custom.ts",
+			exclude: "**/exclude/*.custom.ts",
+		})
+
+		const config: Partial<ResolvedConfig> = {
+			root: "/root",
+			mode: "development",
+		}
+
+		assert.strictEqual(createFilter.mock.callCount(), 0)
+
+		plugin.configResolved(config as ResolvedConfig)
+
+		assert.strictEqual(createFilter.mock.callCount(), 1)
+
+		const args = createFilter.mock.calls[0]!.arguments
+
+		assert.deepStrictEqual(args, [
+			"**/*.custom.ts",
+			"**/exclude/*.custom.ts",
+			{
+				resolve: "/root/custom-dir",
+			},
+		])
+	})
+
 	// TODO transform file
 	// TODO respect rootDir
 	// TODO respect include
