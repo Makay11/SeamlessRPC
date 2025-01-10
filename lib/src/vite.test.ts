@@ -87,17 +87,16 @@ describe("rpc", () => {
 		})
 	})
 
+	// TODO create filter with default values
 	it("should create a filter with default values", () => {
 		const plugin = rpc()
 
-		const config: Partial<ResolvedConfig> = {
-			root: "/root",
-			mode: "development",
-		}
-
 		assert.strictEqual(createFilter.mock.callCount(), 0)
 
-		plugin.configResolved(config as ResolvedConfig)
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
 
 		assert.strictEqual(createFilter.mock.callCount(), 1)
 
@@ -112,29 +111,28 @@ describe("rpc", () => {
 		])
 	})
 
+	// TODO create filter with custom values
 	it("should create a filter with custom values", () => {
 		const plugin = rpc({
 			rootDir: "custom-dir",
-			include: "**/*.custom.ts",
-			exclude: "**/exclude/*.custom.ts",
+			include: "./**/*.custom.ts",
+			exclude: "./**/exclude/*.custom.ts",
 		})
-
-		const config: Partial<ResolvedConfig> = {
-			root: "/root",
-			mode: "development",
-		}
 
 		assert.strictEqual(createFilter.mock.callCount(), 0)
 
-		plugin.configResolved(config as ResolvedConfig)
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
 
 		assert.strictEqual(createFilter.mock.callCount(), 1)
 
 		const args = createFilter.mock.calls[0]!.arguments
 
 		assert.deepStrictEqual(args, [
-			"**/*.custom.ts",
-			"**/exclude/*.custom.ts",
+			"./**/*.custom.ts",
+			"./**/exclude/*.custom.ts",
 			{
 				resolve: "/root/custom-dir",
 			},
@@ -142,9 +140,40 @@ describe("rpc", () => {
 	})
 
 	// TODO transform file
-	// TODO respect rootDir
-	// TODO respect include
-	// TODO respect exclude
+	it("should transform a file", async () => {
+		const plugin = rpc({
+			rootDir: "src",
+		})
+
+		plugin.configResolved({
+			root: "/root",
+			mode: "development",
+		} as ResolvedConfig)
+
+		const code = `
+			export async function bar() {
+				return "baz"
+			}
+
+			export async function hello() {
+				return "world"
+			}
+		`
+
+		const transformedCode = await plugin.transform(
+			code,
+			"/root/src/foo.server.ts",
+		)
+
+		assert.strictEqual(
+			transformedCode,
+			`import { rpc } from "@makay/rpc/client"
+export const bar = rpc("foo.server/bar")
+export const hello = rpc("foo.server/hello")
+`,
+		)
+	})
+
 	// TODO respect hashPaths
 	// TODO respect config.mode
 	// TODO handle all export scenarios

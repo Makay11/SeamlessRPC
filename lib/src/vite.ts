@@ -19,11 +19,6 @@ export type Options = {
 	hashPaths?: boolean | undefined
 }
 
-export type TransformPluginContext = ThisParameterType<
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	Extract<Plugin["transform"], Function>
->
-
 type CreateExport = (id: string, name: string) => string
 
 export function rpc({
@@ -66,7 +61,7 @@ export function rpc({
 			)
 		},
 
-		async transform(this: TransformPluginContext, code, id) {
+		async transform(this: unknown, code, id) {
 			if (!filter(id)) return
 
 			const program = await parseAstAsync(code)

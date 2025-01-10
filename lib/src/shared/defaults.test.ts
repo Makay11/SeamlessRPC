@@ -15,7 +15,7 @@ describe("DEFAULT_ROOT_DIR", () => {
 
 describe("DEFAULT_INCLUDE", () => {
 	it("has the expected value", () => {
-		assert.strictEqual(DEFAULT_INCLUDE, "**/*.server.{js,ts}")
+		assert.strictEqual(DEFAULT_INCLUDE, "./**/*.server.{js,ts}")
 	})
 })
 
