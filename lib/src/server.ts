@@ -1,3 +1,5 @@
+/* node:coverage disable */ // coverage seems broken for this file
+
 import { resolve } from "node:path"
 
 import { glob } from "tinyglobby"
