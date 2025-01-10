@@ -3,6 +3,7 @@ import { beforeEach, describe, it, mock } from "node:test"
 
 import type { glob as _glob } from "tinyglobby"
 
+import type { importModule as _importModule } from "./server/importModule.ts"
 import {
 	DEFAULT_EXCLUDE,
 	DEFAULT_INCLUDE,
@@ -18,6 +19,23 @@ beforeEach(() => {
 mock.module("tinyglobby", {
 	namedExports: {
 		glob,
+	},
+})
+
+const importModule = mock.fn<typeof _importModule>(
+	/* node:coverage ignore next 3 */
+	() => {
+		throw new Error("Missing mock implementation.")
+	},
+)
+
+beforeEach(() => {
+	importModule.mock.resetCalls()
+})
+
+mock.module("./server/importModule.ts", {
+	namedExports: {
+		importModule,
 	},
 })
 
@@ -60,19 +78,19 @@ describe("createRpc", () => {
 		])
 	})
 
-	void it.skip("imports matching files and allows calling procedures by id", async (t) => {
+	it("imports matching files and allows calling procedures by id or hashed id", async () => {
 		glob.mock.mockImplementationOnce(async () =>
 			Promise.resolve(["path/to/file.js"]),
 		)
 
-		// TODO this fails with ERR_MODULE_NOT_FOUND
-		t.mock.module("/fake/path/to/file.js", {
-			namedExports: {
-				async someMethod(arg0: string, arg1: string) {
-					return Promise.resolve({ arg0, arg1 })
-				},
-			},
-		})
+		importModule.mock.mockImplementationOnce(
+			async () =>
+				Promise.resolve({
+					async someMethod(arg0: string, arg1: string) {
+						return Promise.resolve({ arg0, arg1 })
+					},
+				}) as ReturnType<typeof importModule>,
+		)
 
 		const rpc = await createRpc({
 			rootDir: "/fake",
@@ -85,9 +103,13 @@ describe("createRpc", () => {
 				arg1: "world",
 			},
 		)
-	})
 
-	void it.todo(
-		"imports matching files and allows calling procedures by hashed id",
-	)
+		assert.deepStrictEqual(
+			await rpc("wQ4kqGqVjBdtgwua/someMethod", ["hello", "world"]),
+			{
+				arg0: "hello",
+				arg1: "world",
+			},
+		)
+	})
 })

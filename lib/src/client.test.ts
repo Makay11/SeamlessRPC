@@ -56,7 +56,7 @@ describe("rpc", () => {
 		fetch = globalThis.fetch = mock.fn(
 			/* node:coverage ignore next 3 */
 			() => {
-				throw new Error("Missing response mock.")
+				throw new Error("Missing mock implementation.")
 			},
 		)
 	})
