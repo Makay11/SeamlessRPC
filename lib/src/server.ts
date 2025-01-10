@@ -4,6 +4,7 @@ import { glob } from "tinyglobby"
 import type { JsonValue } from "type-fest"
 
 import { ProcedureNotFoundError } from "./server/errors.ts"
+import { importModule } from "./server/importModule.ts"
 import {
 	DEFAULT_EXCLUDE,
 	DEFAULT_INCLUDE,
@@ -42,7 +43,7 @@ export async function createRpc({
 		paths.map(async (path) => {
 			const absolutePath = resolve(rootDir, path)
 
-			const module = (await import(absolutePath)) as Record<string, Procedure>
+			const module = await importModule(absolutePath)
 
 			for (const exportName in module) {
 				const procedure = module[exportName]!
