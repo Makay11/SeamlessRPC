@@ -21,8 +21,9 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
 [📡 Subscriptions](#-subscriptions)
 
 [🔌 Adapters](#-adapters)
-[🔥 Hono](#-hono)
-[💎 Zod](#-zod)
+[<img src="icons/logos--hono.svg" alt="Hono logo" height="14px"> Hono](#-hono)
+[<img src="icons/logos--vue.svg" alt="Vue logo" height="14px"> Vue](#-vue)
+[<img src="icons/logos--zod.svg" alt="Zod logo" height="14px"> Zod](#-zod)
 
 [🧑🏻‍💻 Contributing](#-contributing)
 [📄 License](#-license)
@@ -286,11 +287,15 @@ WIP
 
 ## 🔌 Adapters
 
-### 🔥 Hono
+### <img src="icons/logos--hono.svg" alt="Hono logo" height="20px"> Hono
 
 WIP
 
-### 💎 Zod
+### <img src="icons/logos--vue.svg" alt="Vue.js logo" height="20px"> Vue
+
+WIP
+
+### <img src="icons/logos--zod.svg" alt="Zod logo" height="20px"> Zod
 
 WIP
 
