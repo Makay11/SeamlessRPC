@@ -9,7 +9,7 @@ import {
 	InvalidRequestBodyError,
 	type Options as RpcOptions,
 	RpcError,
-	runWithStore,
+	runWithAsyncState,
 } from "./server.ts"
 
 export type OnRequest = (ctx: Context) => Promisable<void>
@@ -30,7 +30,7 @@ export async function createRpc({ onRequest, onError, files }: Options = {}) {
 	const rpc = await _createRpc(files)
 
 	return async (ctx: Context, procedureId: string) =>
-		runWithStore(async () => {
+		runWithAsyncState(async () => {
 			try {
 				createContext(ctx)
 

@@ -2,9 +2,9 @@ import { AsyncLocalStorage } from "node:async_hooks"
 
 const asyncLocalStorage = new AsyncLocalStorage<Map<symbol, unknown>>()
 
-export function runWithStore<T>(fn: () => T) {
+export function runWithAsyncState<T>(fn: () => T) {
 	if (asyncLocalStorage.getStore() != null) {
-		throw new Error("Store has already been created.")
+		throw new Error("Already running with async state.")
 	}
 
 	return asyncLocalStorage.run(new Map<symbol, unknown>(), fn)
@@ -14,7 +14,7 @@ function getStoreOrThrow() {
 	const store = asyncLocalStorage.getStore()
 
 	if (store == null) {
-		throw new Error("Store has not been created.")
+		throw new Error("Async state is not available.")
 	}
 
 	return store

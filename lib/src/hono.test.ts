@@ -278,7 +278,7 @@ describe("createRpc", () => {
 	it("allows accessing the context with useContext in a procedure", async () => {
 		assert.throws(() => {
 			useContext()
-		}, new Error("Store has not been created."))
+		}, new Error("Async state is not available."))
 
 		procedure.mock.mockImplementationOnce(async () => {
 			const ctx = useContext()

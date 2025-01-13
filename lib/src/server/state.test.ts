@@ -1,39 +1,39 @@
 import assert from "node:assert"
 import { describe, it } from "node:test"
 
-import { defineState, runWithStore } from "./state.ts"
+import { defineState, runWithAsyncState } from "./state.ts"
 
-describe("runWithStore", () => {
+describe("runWithAsyncState", () => {
 	it("runs the given function and returns its result", () => {
 		assert.deepStrictEqual(
-			runWithStore(() => "result"),
+			runWithAsyncState(() => "result"),
 			"result",
 		)
 	})
 
 	it("throws if there is a nested call", () => {
 		assert.throws(() => {
-			runWithStore(() => {
-				runWithStore(noop)
+			runWithAsyncState(() => {
+				runWithAsyncState(noop)
 			})
-		}, new Error("Store has already been created."))
+		}, new Error("Already running with async state."))
 	})
 })
 
 describe("defineState", () => {
 	describe("createState", () => {
-		it("throws if called outside of a runWithStore call", () => {
+		it("throws if called outside of a runWithAsyncState call", () => {
 			const { createState } = defineState<string>()
 
 			assert.throws(() => {
 				createState("hello")
-			}, new Error("Store has not been created."))
+			}, new Error("Async state is not available."))
 		})
 
 		it("creates a state", () => {
 			const { createState } = defineState<string>()
 
-			const state = runWithStore(() => createState("hello"))
+			const state = runWithAsyncState(() => createState("hello"))
 
 			assert.strictEqual(state, "hello")
 		})
@@ -42,7 +42,7 @@ describe("defineState", () => {
 			const { createState } = defineState<string>()
 
 			assert.throws(() => {
-				runWithStore(() => {
+				runWithAsyncState(() => {
 					createState("hello")
 					createState("world")
 				})
@@ -51,18 +51,18 @@ describe("defineState", () => {
 	})
 
 	describe("replaceState", () => {
-		it("throws if called outside of a runWithStore call", () => {
+		it("throws if called outside of a runWithAsyncState call", () => {
 			const { replaceState } = defineState<string>()
 
 			assert.throws(() => {
 				replaceState("hello")
-			}, new Error("Store has not been created."))
+			}, new Error("Async state is not available."))
 		})
 
 		it("replaces the state", () => {
 			const { createState, replaceState } = defineState<string>()
 
-			const state = runWithStore(() => {
+			const state = runWithAsyncState(() => {
 				createState("hello")
 				return replaceState("world")
 			})
@@ -72,18 +72,18 @@ describe("defineState", () => {
 	})
 
 	describe("clearState", () => {
-		it("throws if called outside of a runWithStore call", () => {
+		it("throws if called outside of a runWithAsyncState call", () => {
 			const { clearState } = defineState<string>()
 
 			assert.throws(() => {
 				clearState()
-			}, new Error("Store has not been created."))
+			}, new Error("Async state is not available."))
 		})
 
 		it("clears the state", () => {
 			const { createState, clearState } = defineState<string>()
 
-			const state = runWithStore(() => {
+			const state = runWithAsyncState(() => {
 				createState("hello")
 				clearState()
 				return createState("world")
@@ -94,18 +94,18 @@ describe("defineState", () => {
 	})
 
 	describe("useState", () => {
-		it("throws if called outside of a runWithStore call", () => {
+		it("throws if called outside of a runWithAsyncState call", () => {
 			const { useState } = defineState<string>()
 
 			assert.throws(() => {
 				useState()
-			}, new Error("Store has not been created."))
+			}, new Error("Async state is not available."))
 		})
 
 		it("returns the state", () => {
 			const { createState, useState } = defineState<string>()
 
-			const state = runWithStore(() => {
+			const state = runWithAsyncState(() => {
 				createState("hello")
 				return useState()
 			})
@@ -116,25 +116,25 @@ describe("defineState", () => {
 		it("returns undefined if the state has not been created", () => {
 			const { useState } = defineState<string>()
 
-			const state = runWithStore(() => useState())
+			const state = runWithAsyncState(() => useState())
 
 			assert.strictEqual(state, undefined)
 		})
 	})
 
 	describe("useStateOrThrow", () => {
-		it("throws if called outside of a runWithStore call", () => {
+		it("throws if called outside of a runWithAsyncState call", () => {
 			const { useStateOrThrow } = defineState<string>()
 
 			assert.throws(() => {
 				useStateOrThrow()
-			}, new Error("Store has not been created."))
+			}, new Error("Async state is not available."))
 		})
 
 		it("returns the state", () => {
 			const { createState, useStateOrThrow } = defineState<string>()
 
-			const state = runWithStore(() => {
+			const state = runWithAsyncState(() => {
 				createState("hello")
 				return useStateOrThrow()
 			})
@@ -146,7 +146,7 @@ describe("defineState", () => {
 			const { useStateOrThrow } = defineState<string>()
 
 			assert.throws(() => {
-				runWithStore(() => useStateOrThrow())
+				runWithAsyncState(() => useStateOrThrow())
 			}, new Error("State has not been created."))
 		})
 	})
