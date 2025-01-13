@@ -11,9 +11,9 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.13.7",
-		"@makay/rpc": "link:../lib",
 		"@vueuse/core": "^12.3.0",
 		"hono": "^4.6.15",
+		"seamlessrpc": "link:../lib",
 		"tsx": "^4.19.2",
 		"vue": "^3.5.13",
 		"zod": "^3.24.1"

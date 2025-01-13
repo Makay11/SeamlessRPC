@@ -3,9 +3,9 @@ import type { JsonValue } from "type-fest"
 
 import { eventStream } from "./shared/eventStream.ts"
 
-declare const $MAKAY_RPC_URL: string
-declare const $MAKAY_RPC_CREDENTIALS: RequestCredentials
-declare const $MAKAY_RPC_SSE: boolean
+declare const $SEAMLESSRPC_URL: string
+declare const $SEAMLESSRPC_CREDENTIALS: RequestCredentials
+declare const $SEAMLESSRPC_SSE: boolean
 
 export class RpcClientError extends Error {
 	public response
@@ -20,9 +20,9 @@ export function rpc(procedureId: string) {
 	return async (...args: Array<JsonValue>) => {
 		const abortController = new AbortController()
 
-		const response = await fetch(`${$MAKAY_RPC_URL}/${procedureId}`, {
+		const response = await fetch(`${$SEAMLESSRPC_URL}/${procedureId}`, {
 			method: "POST",
-			credentials: $MAKAY_RPC_CREDENTIALS,
+			credentials: $SEAMLESSRPC_CREDENTIALS,
 			headers: {
 				"Content-Type": "application/json",
 			},
@@ -39,7 +39,7 @@ export function rpc(procedureId: string) {
 		}
 
 		if (response.headers.get("Content-Type") === "text/event-stream") {
-			if (!$MAKAY_RPC_SSE) {
+			if (!$SEAMLESSRPC_SSE) {
 				throw new Error("SSE support is not enabled.")
 			}
 

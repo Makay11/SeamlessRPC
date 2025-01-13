@@ -29,7 +29,7 @@ describe("rpc", () => {
 	it("returns a vite plugin", () => {
 		const plugin = rpc()
 
-		assert.strictEqual(plugin.name, "@makay/rpc")
+		assert.strictEqual(plugin.name, "seamlessrpc")
 	})
 
 	it("sets config.define with default values", () => {
@@ -40,9 +40,9 @@ describe("rpc", () => {
 		plugin.config(config)
 
 		assert.deepStrictEqual(config.define, {
-			$MAKAY_RPC_URL: '"/rpc"',
-			$MAKAY_RPC_CREDENTIALS: '"same-origin"',
-			$MAKAY_RPC_SSE: "false",
+			$SEAMLESSRPC_URL: '"/rpc"',
+			$SEAMLESSRPC_CREDENTIALS: '"same-origin"',
+			$SEAMLESSRPC_SSE: "false",
 		})
 	})
 
@@ -58,9 +58,9 @@ describe("rpc", () => {
 		plugin.config(config)
 
 		assert.deepStrictEqual(config.define, {
-			$MAKAY_RPC_URL: '"/rpc/v1"',
-			$MAKAY_RPC_CREDENTIALS: '"include"',
-			$MAKAY_RPC_SSE: "true",
+			$SEAMLESSRPC_URL: '"/rpc/v1"',
+			$SEAMLESSRPC_CREDENTIALS: '"include"',
+			$SEAMLESSRPC_SSE: "true",
 		})
 	})
 
@@ -81,9 +81,9 @@ describe("rpc", () => {
 
 		assert.deepStrictEqual(config.define, {
 			foo: '"bar"',
-			$MAKAY_RPC_URL: '"/rpc/v1"',
-			$MAKAY_RPC_CREDENTIALS: '"include"',
-			$MAKAY_RPC_SSE: "true",
+			$SEAMLESSRPC_URL: '"/rpc/v1"',
+			$SEAMLESSRPC_CREDENTIALS: '"include"',
+			$SEAMLESSRPC_SSE: "true",
 		})
 	})
 
@@ -171,7 +171,7 @@ describe("rpc", () => {
 
 		assert.strictEqual(
 			transformedCode,
-			`import { rpc } from "@makay/rpc/client"
+			`import { rpc } from "seamlessrpc/client"
 export const bar = rpc("foo.server/bar")
 export const hello = rpc("foo.server/hello")
 `,
@@ -231,7 +231,7 @@ export const hello = rpc("foo.server/hello")
 
 		assert.strictEqual(
 			transformedCode,
-			`import { rpc } from "@makay/rpc/client"
+			`import { rpc } from "seamlessrpc/client"
 export const bar = rpc("-5KgEd_NKIC7DUMm/bar")
 export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 `,
@@ -265,7 +265,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 
 		assert.strictEqual(
 			transformedCode,
-			`import { rpc } from "@makay/rpc/client"
+			`import { rpc } from "seamlessrpc/client"
 export const bar = rpc("-5KgEd_NKIC7DUMm/bar")
 export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 `,
@@ -300,7 +300,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 
 		assert.strictEqual(
 			transformedCode,
-			`import { rpc } from "@makay/rpc/client"
+			`import { rpc } from "seamlessrpc/client"
 export const bar = rpc("foo.server/bar")
 export const hello = rpc("foo.server/hello")
 `,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAsyncState, whenever } from "@vueuse/core"
 import { reactive, ref } from "vue"
-import { useSubscription } from "@makay/rpc/vue"
+import { useSubscription } from "seamlessrpc/vue"
 
 import {
 	createMessage,

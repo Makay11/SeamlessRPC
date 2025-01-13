@@ -32,19 +32,19 @@ export function rpc({
 }: Options = {}) {
 	let filter: (id: string) => boolean
 
-	const _import = 'import { rpc } from "@makay/rpc/client"'
+	const _import = 'import { rpc } from "seamlessrpc/client"'
 
 	let createExport: CreateExport
 
 	return {
-		name: "@makay/rpc",
+		name: "seamlessrpc",
 
 		config(config) {
 			config.define = {
 				...config.define,
-				$MAKAY_RPC_URL: JSON.stringify(url),
-				$MAKAY_RPC_CREDENTIALS: JSON.stringify(credentials),
-				$MAKAY_RPC_SSE: JSON.stringify(sse),
+				$SEAMLESSRPC_URL: JSON.stringify(url),
+				$SEAMLESSRPC_CREDENTIALS: JSON.stringify(credentials),
+				$SEAMLESSRPC_SSE: JSON.stringify(sse),
 			}
 		},
 

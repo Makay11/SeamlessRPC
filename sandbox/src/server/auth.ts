@@ -1,6 +1,6 @@
-import { useContext } from "@makay/rpc/hono"
-import { defineState, UnauthorizedError } from "@makay/rpc/server"
-import { z } from "@makay/rpc/zod"
+import { useContext } from "seamlessrpc/hono"
+import { defineState, UnauthorizedError } from "seamlessrpc/server"
+import { z } from "seamlessrpc/zod"
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie"
 
 export const UserSchema = z.object({

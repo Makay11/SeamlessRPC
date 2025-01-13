@@ -11,15 +11,15 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.13.7(hono@4.6.15)
-      '@makay/rpc':
-        specifier: link:../lib
-        version: link:../lib
       '@vueuse/core':
         specifier: ^12.3.0
         version: 12.3.0(typescript@5.7.2)
       hono:
         specifier: ^4.6.15
         version: 4.6.15
+      seamlessrpc:
+        specifier: link:../lib
+        version: link:../lib
       tsx:
         specifier: ^4.19.2
         version: 4.19.2

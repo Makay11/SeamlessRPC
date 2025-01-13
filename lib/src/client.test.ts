@@ -7,9 +7,9 @@ import { rpc, RpcClientError } from "./client.ts"
 
 declare global {
 	/* eslint-disable no-var */
-	var $MAKAY_RPC_URL: string
-	var $MAKAY_RPC_CREDENTIALS: RequestCredentials
-	var $MAKAY_RPC_SSE: boolean
+	var $SEAMLESSRPC_URL: string
+	var $SEAMLESSRPC_CREDENTIALS: RequestCredentials
+	var $SEAMLESSRPC_SSE: boolean
 
 	var window: Window & typeof globalThis
 	/* eslint-enable no-var */
@@ -47,9 +47,9 @@ describe("rpc", () => {
 	let fetch: Mock<typeof globalThis.fetch>
 
 	beforeEach(() => {
-		globalThis.$MAKAY_RPC_URL = "http://localhost:3000"
-		globalThis.$MAKAY_RPC_CREDENTIALS = "include"
-		globalThis.$MAKAY_RPC_SSE = false
+		globalThis.$SEAMLESSRPC_URL = "http://localhost:3000"
+		globalThis.$SEAMLESSRPC_CREDENTIALS = "include"
+		globalThis.$SEAMLESSRPC_SSE = false
 
 		window = globalThis.window = {} as typeof globalThis.window
 
@@ -66,8 +66,8 @@ describe("rpc", () => {
 	}
 
 	it("sends a POST request", async () => {
-		globalThis.$MAKAY_RPC_URL = "http://localhost:1234"
-		globalThis.$MAKAY_RPC_CREDENTIALS = "same-origin"
+		globalThis.$SEAMLESSRPC_URL = "http://localhost:1234"
+		globalThis.$SEAMLESSRPC_CREDENTIALS = "same-origin"
 
 		mockResponse(new Response(JSON.stringify("hello world!")))
 
@@ -135,7 +135,7 @@ describe("rpc", () => {
 		let _execute: ReturnType<typeof rpc>
 
 		beforeEach(() => {
-			globalThis.$MAKAY_RPC_SSE = true
+			globalThis.$SEAMLESSRPC_SSE = true
 
 			addEventListener = window.addEventListener = mock.fn()
 			removeEventListener = window.removeEventListener = mock.fn()
@@ -182,7 +182,7 @@ describe("rpc", () => {
 		}
 
 		it("throws if the response is an event stream but SSE support is not enabled", async () => {
-			globalThis.$MAKAY_RPC_SSE = false
+			globalThis.$SEAMLESSRPC_SSE = false
 
 			await assert.rejects(execute(), new Error("SSE support is not enabled."))
 		})

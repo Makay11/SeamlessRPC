@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from "node:url"
 
-import { rpc } from "@makay/rpc/vite"
+import { rpc } from "seamlessrpc/vite"
 import vue from "@vitejs/plugin-vue"
 import { defineConfig } from "vite"
 import Inspect from "vite-plugin-inspect"

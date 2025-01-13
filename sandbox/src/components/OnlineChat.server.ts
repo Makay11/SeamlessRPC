@@ -1,7 +1,7 @@
 import EventEmitter from "node:events"
 
-import { eventStream } from "@makay/rpc/server"
-import { z, zv } from "@makay/rpc/zod"
+import { eventStream } from "seamlessrpc/server"
+import { z, zv } from "seamlessrpc/zod"
 
 import {
 	login as _login,
