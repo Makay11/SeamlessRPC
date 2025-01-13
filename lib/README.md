@@ -21,9 +21,9 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
 [📡 Subscriptions](#-subscriptions)
 
 [🔌 Adapters](#-adapters)
-[<img src="icons/logos--hono.svg" alt="Hono logo" height="1em"> Hono](#-hono)
-[<img src="icons/logos--vue.svg" alt="Vue logo" height="1em"> Vue](#-vue)
-[<img src="icons/logos--zod.svg" alt="Zod logo" height="1em"> Zod](#-zod)
+[<img src="icons/logos--hono.svg" alt="Hono logo" height="14"> Hono](#-hono)
+[<img src="icons/logos--vue.svg" alt="Vue logo" height="14"> Vue](#-vue)
+[<img src="icons/logos--zod.svg" alt="Zod logo" height="14"> Zod](#-zod)
 
 [🧑🏻‍💻 Contributing](#-contributing)
 [📄 License](#-license)
@@ -287,15 +287,15 @@ WIP
 
 ## 🔌 Adapters
 
-### <img src="icons/logos--hono.svg" alt="Hono logo" height="1em"> Hono
+### <img src="icons/logos--hono.svg" alt="Hono logo" height="18"> Hono
 
 WIP
 
-### <img src="icons/logos--vue.svg" alt="Vue.js logo" height="1em"> Vue
+### <img src="icons/logos--vue.svg" alt="Vue.js logo" height="18"> Vue
 
 WIP
 
-### <img src="icons/logos--zod.svg" alt="Zod logo" height="1em"> Zod
+### <img src="icons/logos--zod.svg" alt="Zod logo" height="18"> Zod
 
 WIP
 
