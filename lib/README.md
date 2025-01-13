@@ -1,4 +1,4 @@
-# 🌐 @makay/rpc
+# 🌐 SeamlessRPC
 
 An RPC library for quick development of seamless full-stack applications.
 
@@ -22,7 +22,7 @@ Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https
 [🔥 Hono](#-hono)
 [💎 Zod](#-zod)
 
-[🧑🏻‍💻 Contributing](#🧑🏻-contributing)
+[🧑🏻‍💻 Contributing](#-contributing)
 [📄 License](#-license)
 
 </div>
