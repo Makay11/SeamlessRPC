@@ -42,26 +42,26 @@ Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https
 - 🚫 Low server overhead with no implicit run-time validations
 - 🪝 Use the [composables](https://vuejs.org/guide/reusability/composables)/[hooks](https://react.dev/reference/react/hooks) pattern in server code
 - 🔌 Includes adapters for popular libraries like [Hono](https://hono.dev/) and [Zod](https://zod.dev/)
-- 🧰 Includes utilities for [async server state](https://github.com/Makay11/rpc/blob/main/lib/src/server/state.ts) and [results](https://github.com/Makay11/rpc/blob/main/lib/src/result.ts)
+- 🧰 Includes utilities for [async server state](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/server/state.ts) and [results](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/result.ts)
 
 ## 🔧 Installation and setup
 
 1. Install a single package:
 
    ```sh
-   npm i @makay/rpc
+   npm i seamlessrpc
    ```
 
    ```sh
-   yarn add @makay/rpc
+   yarn add seamlessrpc
    ```
 
    ```sh
-   pnpm add @makay/rpc
+   pnpm add seamlessrpc
    ```
 
    ```sh
-   bun add @makay/rpc
+   bun add seamlessrpc
    ```
 
    Everything is included out-of-the-box!
@@ -70,7 +70,7 @@ Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https
 
    ```ts
    // vite.config.ts
-   import { rpc } from "@makay/rpc/vite"
+   import { rpc } from "seamlessrpc/vite"
    import { defineConfig } from "vite"
 
    export default defineConfig({
@@ -85,7 +85,7 @@ Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https
    ```ts
    // src/server.ts
    import { serve } from "@hono/node-server"
-   import { createRpc } from "@makay/rpc/hono"
+   import { createRpc } from "seamlessrpc/hono"
    import { Hono } from "hono"
    import { cors } from "hono/cors"
 
@@ -110,7 +110,7 @@ Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https
 
    ```ts
    // src/main.ts
-   import { config } from "@makay/rpc/client"
+   import { config } from "seamlessrpc/client"
 
    config.url = "http://localhost:3000/rpc"
    config.credentials = "include"
@@ -192,10 +192,10 @@ export async function createTodo(text: string) {
 
 When using the [Hono](https://hono.dev/) adapter, for instance, the code above will result in a `500 Internal Server Error` when you send an invalid input. In order to return the expected `400 Bad Request` instead, you have many options depending on the libraries, frameworks, and adapters you are using. Here are a few examples:
 
-1. Catch the [Zod](https://zod.dev/) error and throw a `ValidationError` from `@makay/rpc/server` instead:
+1. Catch the [Zod](https://zod.dev/) error and throw a `ValidationError` from `seamlessrpc/server` instead:
 
    ```ts
-   import { ValidationError } from "@makay/rpc/server"
+   import { ValidationError } from "seamlessrpc/server"
 
    const TextSchema = z.string().min(1).max(256)
 
@@ -218,7 +218,7 @@ When using the [Hono](https://hono.dev/) adapter, for instance, the code above w
 2. Use the included [Zod](https://zod.dev/) adapter:
 
    ```ts
-   import { z, zv } from "@makay/rpc/zod"
+   import { z, zv } from "seamlessrpc/zod"
 
    const TextSchema = z.string().min(1).max(256)
 
@@ -235,7 +235,7 @@ When using the [Hono](https://hono.dev/) adapter, for instance, the code above w
 
    ```ts
    import { serve } from "@hono/node-server"
-   import { createRpc } from "@makay/rpc/hono"
+   import { createRpc } from "seamlessrpc/hono"
    import { Hono } from "hono"
    import { cors } from "hono/cors"
    import { ZodError } from "zod"
@@ -264,7 +264,7 @@ When using the [Hono](https://hono.dev/) adapter, for instance, the code above w
 
    This allows you to catch any unhandled [Zod](https://zod.dev/) errors and return `400 Bad Request` regardless of which server function threw the error.
 
-You can easily adapt any of the examples above to work with any libraries and frameworks you are using. Remember that `@makay/rpc` is completely agnostic.
+You can easily adapt any of the examples above to work with any libraries and frameworks you are using. Remember that `seamlessrpc` is completely agnostic.
 
 ## 🚨 Errors
 
