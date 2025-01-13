@@ -4,6 +4,8 @@ An RPC library for quick development of seamless full-stack applications.
 
 Powered by a [Vite](https://vitejs.dev/) plugin and inspired by [Telefunc](https://telefunc.com/), [tRPC](https://trpc.io/) and other similar libraries.
 
+Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
+
 ---
 
 <div align="center">
