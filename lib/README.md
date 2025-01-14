@@ -280,7 +280,47 @@ However, it also allows you to provide a custom error handler to map errors in a
 
 ## 📦 Async server state
 
-WIP
+SeamlessRPC provides a way to store temporary server state tied to a request. The state is stored within the server process using [AsyncLocalStorage](https://nodejs.org/docs/latest-v22.x/api/async_context.html#class-asynclocalstorage).
+
+The state can be accessed from any function in a way that resembles the [composables](https://vuejs.org/guide/reusability/composables)/[hooks](https://react.dev/reference/react/hooks) pattern.
+
+```typescript
+// src/components/Example.server.ts
+import { defineState } from "seamlessrpc/server"
+
+export type User = {
+  id: number
+  name: string
+}
+
+const { createState, replaceState, clearState, useState, useStateOrThrow } =
+  defineState<User>()
+
+export async function example() {
+  // throws if state has already been created
+  let user = createState({
+    id: 1,
+    name: "John Doe",
+  })
+
+  // creates or replaces existing state
+  user = replaceState({
+    id: 2,
+    name: "Jane Doe",
+  })
+
+  // clears state if it exists
+  clearState()
+
+  // returns undefined if state has not been created
+  const maybeUser = useState()
+
+  // throws if state has not been created
+  user = useStateOrThrow()
+}
+```
+
+Check [sandbox/src/server/auth.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/server/auth.ts) and [sandbox/src/components/OnlineChat.server.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/components/OnlineChat.server.ts) for a full example of using async server state to implement authentication.
 
 ## 👍 Results
 
