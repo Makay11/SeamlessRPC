@@ -233,7 +233,50 @@ export async function createTodo(text: unknown) {
 
 ## 🚨 Errors
 
-WIP
+SeamlessRPC includes the following error classes:
+
+- `RpcError`: The base error class for all SeamlessRPC errors.
+- `InvalidRequestBodyError`: Thrown when the request body is invalid or cannot be parsed.
+- `ValidationError`: Thrown when the input validation fails.
+- `UnauthorizedError`: Thrown when the request is unauthorized.
+- `ForbiddenError`: Thrown when the request is forbidden.
+- `ProcedureNotFoundError`: Thrown when the requested procedure is not found.
+
+You can throw any error in your functions:
+
+```typescript
+import {
+  ValidationError,
+  UnauthorizedError,
+  ForbiddenError,
+} from "seamlessrpc/server"
+
+export async function createTodo(text: string) {
+  // if text is invalid
+  throw new ValidationError("Invalid text")
+
+  // if user is not authenticated
+  throw new UnauthorizedError()
+
+  // if user is not allowed to perform an action
+  throw new ForbiddenError()
+
+  // custom error
+  throw new Error("Something went wrong")
+}
+```
+
+The included [Hono](https://hono.dev/) adapter maps errors to HTTP status codes in the following manner, by default:
+
+- `RpcError` -> `500 Internal Server Error`
+- `InvalidRequestBodyError` -> `400 Bad Request`
+- `ValidationError` -> `400 Bad Request`
+- `UnauthorizedError` -> `401 Unauthorized`
+- `ForbiddenError` -> `403 Forbidden`
+- `ProcedureNotFoundError` -> `404 Not Found`
+- Custom errors -> `500 Internal Server Error`
+
+However, it also allows you to provide a custom error handler to map errors in a different way. This is covered in the [Hono section](#-hono) below.
 
 ## 📦 Async server state
 
