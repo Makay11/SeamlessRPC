@@ -401,7 +401,7 @@ WIP
 
 Contributions, issues, suggestions, ideas and discussions are all welcome!
 
-This is an extremely young library and a lot can still change, be added and removed.
+This is a very young library and a lot can still change.
 
 ## 📄 License
 
