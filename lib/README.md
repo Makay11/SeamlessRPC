@@ -324,7 +324,60 @@ Check [sandbox/src/server/auth.ts](https://github.com/Makay11/SeamlessRPC/blob/n
 
 ## 👍 Results
 
-WIP
+Results allow you to send fully typed serializable success or failure values back to the client.
+
+You can create results using the `ok` and `err` functions.
+
+```typescript
+import { ok, err } from "seamlessrpc/result"
+
+const successResult = ok("success")
+// Ok<string> -> { ok: true, value: "success" }
+
+const errorResult = err("failure")
+// Err<string> -> { ok: false, error: "failure" }
+```
+
+For stronger typing you can use the `okConst` and `errConst` convenience functions.
+
+```typescript
+import { okConst, errConst } from "seamlessrpc/result"
+
+// same as `ok("success" as const)`
+const constSuccessResult = okConst("success")
+// Ok<"success"> -> { ok: true, value: "success" }
+
+// same as `err("failure" as const)`
+const constErrorResult = errConst("failure")
+// Err<"failure"> -> { ok: false, error: "failure" }
+```
+
+Here's a full example:
+
+```typescript
+import { ok, errConst } from "seamlessrpc/result"
+
+export async function example() {
+  if (someCondition) {
+    return errConst("some_error")
+  }
+
+  return ok("success")
+}
+
+const result = await example()
+// Err<"some_error"> | Ok<string>
+
+if (result.ok) {
+  // result: Ok<string>
+  console.log(result.value) // "success"
+} else {
+  // result: Err<"some_error">
+  console.error(result.error) // "some_error"
+}
+```
+
+Take a look at [lib/src/result.ts](https://github.com/Makay11/SeamlessRPC/blob/next/lib/src/result.ts) for all the type definitions, including some helper types not mentioned here.
 
 ## 📡 Subscriptions
 
@@ -353,3 +406,7 @@ This is an extremely young library and a lot can still change, be added and remo
 ## 📄 License
 
 [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/)
+
+```
+
+```
