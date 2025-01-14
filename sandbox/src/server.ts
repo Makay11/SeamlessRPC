@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server"
-import { createRpc } from "seamlessrpc/hono"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
+import { createRpc } from "seamlessrpc/hono"
 
 const app = new Hono()
 

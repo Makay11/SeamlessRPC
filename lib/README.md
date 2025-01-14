@@ -77,7 +77,12 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
    import { defineConfig } from "vite"
 
    export default defineConfig({
-     plugins: [rpc()],
+     plugins: [
+       rpc({
+         url: "http://localhost:3000/rpc",
+         credentials: "include",
+       }),
+     ],
    })
    ```
 
@@ -88,36 +93,39 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
    ```ts
    // src/server.ts
    import { serve } from "@hono/node-server"
-   import { createRpc } from "seamlessrpc/hono"
    import { Hono } from "hono"
    import { cors } from "hono/cors"
+   import { createRpc } from "seamlessrpc/hono"
 
    const app = new Hono()
 
    app.use(
-     "/rpc",
-     cors({ origin: "http://localhost:5173", credentials: true }),
-     await createRpc(),
+     cors({
+       origin: "http://localhost:5173",
+       credentials: true,
+     }),
    )
 
-   serve(app, (info) => {
-     console.log(`Server is running on http://localhost:${info.port}`)
+   const rpc = await createRpc()
+
+   app.post("/rpc/:id{.+}", (ctx) => {
+     return rpc(ctx, ctx.req.param("id"))
    })
+
+   serve(
+     {
+       fetch: app.fetch,
+       port: 3000,
+     },
+     (info) => {
+       console.log(`Server is running on http://localhost:${info.port}`)
+     },
+   )
    ```
 
-   You can run the above file with something like `npx tsx src/server.ts`.
+   You can run the above file with `npx tsx src/server.ts`.
 
    You can also run `npx tsx watch src/server.ts` to auto-reload during development.
-
-4. Configure your client:
-
-   ```ts
-   // src/main.ts
-   import { config } from "seamlessrpc/client"
-
-   config.url = "http://localhost:3000/rpc"
-   config.credentials = "include"
-   ```
 
 ## 🚀 Usage
 
@@ -156,6 +164,8 @@ export async function getTodos() {
 }
 
 export async function createTodo(text: string) {
+  // TODO validate text
+
   const todo = {
     id: crypto.randomUUID(),
     text,
@@ -175,99 +185,51 @@ In a real scenario you would store your data in a database rather than in the se
 
 There is no implicit run-time validation of inputs in the server. In the example above, the function `createTodo` expects a single string argument. However, if your server is exposed publicly, bad actors or misconfigured clients might send something unexpected which can cause undefined behavior in you program.
 
-Therefore, it is **extremely recommended** that you validate all function inputs. You can use any validation library you want for this.
+Therefore, it is ⚠️ **extremely important** ⚠️ that you validate the inputs of all exposed function.
 
-Here's a basic example using [Zod](https://zod.dev/):
+Here's a basic example using the included [Zod](https://zod.dev/) adapter:
 
 ```ts
-// src/components/Todos.server.ts
-import { z } from "zod"
+import { z, zv } from "seamlessrpc/zod"
 
 const TextSchema = z.string().min(1).max(256)
 
-export async function createTodo(text: string) {
-  TextSchema.parse(text)
+type Text = z.output<typeof TextSchema>
 
-  // `text` is now safe to use since Zod would have
-  // thrown an error if it was invalid
+export async function createTodo(text: Text) {
+  zv(text, TextSchema)
+
+  // `text` is now safe to use
 }
 ```
 
-When using the [Hono](https://hono.dev/) adapter, for instance, the code above will result in a `500 Internal Server Error` when you send an invalid input. In order to return the expected `400 Bad Request` instead, you have many options depending on the libraries, frameworks, and adapters you are using. Here are a few examples:
+You can use any validation library or even your own custom code to validate your inputs since SeamlessRPC is completely agnostic. Just make sure to throw an instance of the included `ValidationError` so that the server responds with a `400 Bad Request` instead of the default `500 Internal Server Error`.
 
-1. Catch the [Zod](https://zod.dev/) error and throw a `ValidationError` from `seamlessrpc/server` instead:
+```ts
+import { ValidationError } from "seamlessrpc/server"
 
-   ```ts
-   import { ValidationError } from "seamlessrpc/server"
+export async function createTodo(text: string) {
+  if (typeof text !== "string" || text.length < 1 || text.length > 256) {
+    throw new ValidationError("Invalid text")
+  }
 
-   const TextSchema = z.string().min(1).max(256)
+  // `text` is now safe to use
+}
+```
 
-   export async function createTodo(text: string) {
-     try {
-       TextSchema.parse(text)
-     } catch (error) {
-       if (error instanceof ZodError) {
-         throw new ValidationError(error.error.format())
-       }
-       throw error
-     }
+If you are worried about forgetting to validate your inputs within the function, you can write a separate function signature with the expected types and then use `unknown` in the actual function implementation. The downside is that you have to explicitly provide a return type rather than letting it be inferred.
 
-     // `text` is now safe to use
-   }
-   ```
+```ts
+export async function createTodo(text: string): Promise<string>
 
-   This is of course a bit too verbose to be practical.
+export async function createTodo(text: unknown) {
+  if (typeof text !== "string" || text.length < 1 || text.length > 256) {
+    throw new ValidationError("Invalid text")
+  }
 
-2. Use the included [Zod](https://zod.dev/) adapter:
-
-   ```ts
-   import { z, zv } from "seamlessrpc/zod"
-
-   const TextSchema = z.string().min(1).max(256)
-
-   export async function createTodo(text: string) {
-     zv(text, TextSchema)
-
-     // `text` is now safe to use
-   }
-   ```
-
-   This is much less verbose than the previous option.
-
-3. Use the `onError` callback of the [Hono](https://hono.dev/) adapter:
-
-   ```ts
-   import { serve } from "@hono/node-server"
-   import { createRpc } from "seamlessrpc/hono"
-   import { Hono } from "hono"
-   import { cors } from "hono/cors"
-   import { ZodError } from "zod"
-
-   const app = new Hono()
-
-   const rpc = await createRpc({
-     onError(ctx, error) {
-       if (error instanceof ZodError) {
-         return ctx.json(error.error.format(), 400)
-       }
-       throw error
-     },
-   })
-
-   app.use(
-     "/rpc",
-     cors({ origin: "http://localhost:5173", credentials: true }),
-     rpc,
-   )
-
-   serve(app, (info) => {
-     console.log(`Server is running on http://localhost:${info.port}`)
-   })
-   ```
-
-   This allows you to catch any unhandled [Zod](https://zod.dev/) errors and return `400 Bad Request` regardless of which server function threw the error.
-
-You can easily adapt any of the examples above to work with any libraries and frameworks you are using. Remember that `seamlessrpc` is completely agnostic.
+  // `text` is now safe to use
+}
+```
 
 ## 🚨 Errors
 
