@@ -320,7 +320,7 @@ export async function example() {
 }
 ```
 
-Check [sandbox/src/server/auth.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/server/auth.ts) and [sandbox/src/components/OnlineChat.server.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/components/OnlineChat.server.ts) for a full example of using async server state to implement authentication.
+Take a look at [sandbox/src/server/auth.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/server/auth.ts) and [sandbox/src/components/OnlineChat.server.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/components/OnlineChat.server.ts) for a full example of using async server state to implement basic authentication.
 
 ## 👍 Results
 
@@ -406,7 +406,3 @@ This is an extremely young library and a lot can still change, be added and remo
 ## 📄 License
 
 [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/)
-
-```
-
-```
