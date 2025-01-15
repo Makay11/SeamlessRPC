@@ -276,7 +276,7 @@ The included [Hono](https://hono.dev/) adapter maps errors to HTTP status codes 
 - `ProcedureNotFoundError` -> `404 Not Found`
 - Custom errors -> `500 Internal Server Error`
 
-However, it also allows you to provide a custom error handler to map errors in a different way. This is covered in the [Hono section](#-hono) below.
+However, it also allows you to provide a custom error handler to handle errors in a different way. This is covered in the [Hono section](#-hono) below.
 
 ## 📦 Async server state
 
@@ -387,7 +387,77 @@ WIP
 
 ### <img src="icons/logos--hono.svg" alt="" height="18"> Hono
 
-WIP
+The Hono adapter allows you to use SeamlessRPC with a [Hono](https://honojs.dev) back-end.
+
+```typescript
+// src/server.ts
+import { serve } from "@hono/node-server"
+import { Hono } from "hono"
+import { createRpc } from "seamlessrpc/hono"
+
+const app = new Hono()
+
+const rpc = await createRpc()
+
+app.post("/rpc/:id{.+}", (ctx) => {
+  return rpc(ctx, ctx.req.param("id"))
+})
+
+serve(
+  {
+    fetch: app.fetch,
+    port: 3000,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`)
+  },
+)
+```
+
+The `createRpc` function accepts an optional object with the following optional properties:
+
+- `onRequest`: a function that is called before each RPC request
+- `onError`: a function that is called when an error occurs during an RPC request
+- `files`: an object with the following optional properties:
+  - `rootDir`: the root directory of the RPC files
+  - `include`: an array of file patterns to include
+  - `exclude`: an array of file patterns to exclude
+
+```typescript
+// src/server.ts
+import { createRpc } from "seamlessrpc/hono"
+import { RpcError, getHttpStatusCode } from "seamlessrpc/server"
+
+const rpc = await createRpc({
+  async onRequest(ctx) {
+    // do something before each request
+    // like initializing async server state
+  },
+
+  async onError(ctx, error) {
+    // do something when an error occurs
+
+    // log the error
+    console.error(error)
+
+    // keep original error handling behavior
+    if (error instanceof RpcError) {
+      return ctx.json(error, getHttpStatusCode(error))
+    } else {
+      throw error
+    }
+
+    // or send custom response
+    return ctx.json("Something went wrong", 500)
+  },
+
+  files: {
+    rootDir: "src",
+    include: ["./**/*.server.ts"],
+    exclude: ["./**/*.server.test.ts"],
+  },
+})
+```
 
 ### <img src="icons/logos--vue.svg" alt="" height="18"> Vue
 
