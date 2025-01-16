@@ -245,6 +245,7 @@ SeamlessRPC includes the following error classes:
 You can throw any error in your functions:
 
 ```typescript
+// src/components/Todos.server.ts
 import {
   ValidationError,
   UnauthorizedError,
@@ -463,7 +464,7 @@ Check the [Errors section](#-errors) above for more information regarding the de
 
 ### <img src="icons/logos--vue.svg" alt="" height="18"> Vue
 
-SeamlessRPC provides a `useSubscription` helper function that makes it easier to handle subscriptions in [Vue](https://vuejs.org) applications. The function takes an object with the following properties:
+SeamlessRPC includes a `useSubscription` helper function that makes it easier to handle subscriptions in [Vue](https://vuejs.org) applications. The function takes an object with the following properties:
 
 - `source`: an async function that resolves with a [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
 - `onData`: a callback function that will be called whenever new data is received
@@ -471,8 +472,8 @@ SeamlessRPC provides a `useSubscription` helper function that makes it easier to
 - `onError`: an optional callback function that will be called if the subscription is closed with an error
 
 ```vue
+<!-- src/components/OnlineChat.vue -->
 <script setup lang="ts">
-// src/components/OnlineChat.vue
 import { useSubscription } from "seamlessrpc/vue"
 
 import { useMessageCreatedEvents } from "./OnlineChat.server"
@@ -506,7 +507,24 @@ Take a look at [sandbox/src/components/OnlineChat.vue](https://github.com/Makay1
 
 ### <img src="icons/logos--zod.svg" alt="" height="18"> Zod
 
-WIP
+The Zod adapter allows you to use [Zod](https://zod.dev/) for input validation.
+
+```typescript
+// src/components/Todos.server.ts
+import { z, zv } from "seamlessrpc/zod"
+
+const TextSchema = z.string().min(1).max(256)
+
+type Text = z.output<typeof TextSchema>
+
+export async function createTodo(text: Text) {
+  zv(text, TextSchema)
+
+  // `text` is now safe to use
+}
+```
+
+Check the [Input validation section](#-input-validation) above for more information.
 
 ## 🧑🏻‍💻 Contributing
 
@@ -517,7 +535,3 @@ This is a very young library and a lot can still change.
 ## 📄 License
 
 [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/)
-
-```
-
-```
