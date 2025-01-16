@@ -320,7 +320,7 @@ export async function example() {
 }
 ```
 
-Take a look at [sandbox/src/server/auth.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/server/auth.ts) and [sandbox/src/components/OnlineChat.server.ts](https://github.com/Makay11/SeamlessRPC/blob/next/sandbox/src/components/OnlineChat.server.ts) for a full example of using async server state to implement basic authentication.
+Take a look at [sandbox/src/server/auth.ts](https://github.com/Makay11/SeamlessRPC/blob/main/sandbox/src/server/auth.ts) and [sandbox/src/components/OnlineChat.server.ts](https://github.com/Makay11/SeamlessRPC/blob/main/sandbox/src/components/OnlineChat.server.ts) for a full example of using async server state to implement basic authentication.
 
 ## 👍 Results
 
@@ -377,7 +377,7 @@ if (result.ok) {
 }
 ```
 
-Take a look at [lib/src/result.ts](https://github.com/Makay11/SeamlessRPC/blob/next/lib/src/result.ts) for all the type definitions, including some helper types not mentioned here.
+Take a look at [lib/src/result.ts](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/result.ts) for all the type definitions, including some helper types not mentioned here.
 
 ## 📡 Subscriptions
 
@@ -416,8 +416,8 @@ serve(
 
 The `createRpc` function accepts an optional object with the following optional properties:
 
-- `onRequest`: a function that is called before each RPC request
-- `onError`: a function that is called when an error occurs during an RPC request
+- `onRequest`: an async function that is called before each RPC request
+- `onError`: an async function that is called when an error occurs during an RPC request
 - `files`: an object with the following optional properties:
   - `rootDir`: the root directory of the RPC files
   - `include`: file patterns to include
@@ -463,7 +463,46 @@ Check the [Errors section](#-errors) above for more information regarding the de
 
 ### <img src="icons/logos--vue.svg" alt="" height="18"> Vue
 
-WIP
+SeamlessRPC provides a `useSubscription` helper function that makes it easier to handle subscriptions in [Vue](https://vuejs.org) applications. The function takes an object with the following properties:
+
+- `source`: an async function that resolves with a [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
+- `onData`: a callback function that will be called whenever new data is received
+- `onClose`: an optional callback function that will be called when the subscription is closed
+- `onError`: an optional callback function that will be called if the subscription is closed with an error
+
+```vue
+<script setup lang="ts">
+// src/components/OnlineChat.vue
+import { useSubscription } from "seamlessrpc/vue"
+
+import { useMessageCreatedEvents } from "./OnlineChat.server"
+
+const { isSubscribed, isSubscribing, subscribe, unsubscribe } = useSubscription(
+  {
+    source: useMessageCreatedEvents,
+    onData(message) {
+      console.log(message)
+    },
+    onClose() {
+      console.log("closed")
+    },
+    onError(error) {
+      console.error(error)
+    },
+  },
+)
+
+onMounted(() => {
+  subscribe().catch(console.error)
+})
+
+onBeforeUnmount(() => {
+  unsubscribe().catch(console.error)
+})
+</script>
+```
+
+Take a look at [sandbox/src/components/OnlineChat.vue](https://github.com/Makay11/SeamlessRPC/blob/main/sandbox/src/components/OnlineChat.vue) for a more advanced example.
 
 ### <img src="icons/logos--zod.svg" alt="" height="18"> Zod
 
@@ -478,3 +517,7 @@ This is a very young library and a lot can still change.
 ## 📄 License
 
 [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/)
+
+```
+
+```
