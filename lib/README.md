@@ -420,8 +420,8 @@ The `createRpc` function accepts an optional object with the following optional 
 - `onError`: a function that is called when an error occurs during an RPC request
 - `files`: an object with the following optional properties:
   - `rootDir`: the root directory of the RPC files
-  - `include`: an array of file patterns to include
-  - `exclude`: an array of file patterns to exclude
+  - `include`: file patterns to include
+  - `exclude`: file patterns to exclude
 
 ```typescript
 // src/server.ts
@@ -440,7 +440,7 @@ const rpc = await createRpc({
     // log the error
     console.error(error)
 
-    // keep original error handling behavior
+    // keep default error handling behavior
     if (error instanceof RpcError) {
       return ctx.json(error, getHttpStatusCode(error))
     } else {
@@ -458,6 +458,8 @@ const rpc = await createRpc({
   },
 })
 ```
+
+Check the [Errors section](#-errors) above for more information regarding the default error handling behavior.
 
 ### <img src="icons/logos--vue.svg" alt="" height="18"> Vue
 
