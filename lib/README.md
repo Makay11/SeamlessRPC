@@ -39,7 +39,7 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
 - 📡 Optional [server-sent events](https://en.wikipedia.org/wiki/Server-sent_events) support for real-time [subscriptions](#-subscriptions)
 - 🪶 Extremely small client bundle size addition
 - 🔗 Directly import and call tailored server functions from client code
-- 📄 Colocate client and server files (or don't 🤷)
+- 📄 Co-locate client and server files (or don't 🤷)
 - 📦 Front-end and back-end framework agnostic
 - 📦 Validation library agnostic
 - 🚫 Low server overhead with no implicit run-time validations
