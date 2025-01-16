@@ -1,57 +1,76 @@
+/* node:coverage disable */ // coverage seems broken for this file
+
 import { resolve } from "node:path"
 
-import { globStream } from "glob"
-import { z } from "zod"
+import { glob } from "tinyglobby"
+import type { JsonValue } from "type-fest"
 
-import { shortHash } from "./_shared.js"
+import { ProcedureNotFoundError } from "./server/errors.ts"
+import { importModule } from "./server/importModule.ts"
 import {
-	InvalidRequestBodyError,
-	UnknownProcedureError,
-} from "./server/errors.js"
+	DEFAULT_EXCLUDE,
+	DEFAULT_INCLUDE,
+	DEFAULT_ROOT_DIR,
+} from "./shared/defaults.ts"
+import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.ts"
 
-export * from "./server/errors.js"
-export * from "./server/state.js"
+export * from "./server/errors.ts"
+export * from "./server/state.ts"
+export * from "./shared/eventStream.ts"
 
 export type Options = {
-	patterns?: string | string[]
+	rootDir?: string | undefined
+	include?: string | Array<string> | undefined
+	exclude?: string | Array<string> | undefined
 }
 
-export type Procedure = (...args: unknown[]) => Promise<unknown>
-
-export const RequestBodySchema = z.tuple([z.string()]).rest(z.unknown())
+export type Procedure = (
+	...args: Array<JsonValue>
+) => Promise<JsonValue | ReadableStream<JsonValue> | void> // eslint-disable-line @typescript-eslint/no-invalid-void-type
 
 export async function createRpc({
-	patterns = "src/**/*.server.ts",
+	rootDir = DEFAULT_ROOT_DIR,
+	include = DEFAULT_INCLUDE,
+	exclude = DEFAULT_EXCLUDE,
 }: Options = {}) {
 	const proceduresMap = new Map<string, Procedure>()
 
-	for await (const path of globStream(patterns)) {
-		const absolutePath = resolve(process.cwd(), path)
+	const paths = await glob({
+		cwd: rootDir,
+		patterns: include,
+		ignore: exclude,
+	})
 
-		const module = (await import(absolutePath)) as Record<string, Procedure>
+	await Promise.all(
+		paths.map(async (path) => {
+			const absolutePath = resolve(rootDir, path)
 
-		for (const _export in module) {
-			const procedureId = `${path}:${_export}`
-			const procedure = module[_export]!
+			const module = await importModule(absolutePath)
 
-			proceduresMap.set(procedureId, procedure)
-			proceduresMap.set(shortHash(procedureId), procedure)
-		}
-	}
+			for (const exportName in module) {
+				const procedure = module[exportName]!
 
-	return (body: unknown) => {
-		const bodyResult = RequestBodySchema.safeParse(body)
+				const ids = [
+					getProcedureId(path, exportName),
+					getHashedProcedureId(path, exportName),
+				]
 
-		if (!bodyResult.success) {
-			throw new InvalidRequestBodyError()
-		}
+				for (const id of ids) {
+					if (proceduresMap.has(id)) {
+						throw new Error(`Procedure "${id}" is already defined.`)
+					}
 
-		const [procedureId, ...args] = bodyResult.data
+					proceduresMap.set(id, procedure)
+				}
+			}
+		}),
+	)
 
+	return async (procedureId: string, args: Array<JsonValue>) => {
 		const procedure = proceduresMap.get(procedureId)
 
 		if (procedure == null) {
-			throw new UnknownProcedureError()
+			throw new ProcedureNotFoundError()
 		}
 
 		return procedure(...args)

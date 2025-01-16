@@ -1,39 +1,23 @@
 {
-	"name": "@makay/rpc",
-	"version": "0.4.0",
-	"type": "module",
+	"name": "seamlessrpc",
+	"version": "1.0.0",
 	"description": "An RPC library for quick development of seamless full-stack applications.",
 	"keywords": [
+		"vite",
 		"typescript",
 		"rpc",
+		"subscriptions",
 		"sse",
 		"server-sent-events",
-		"real-time",
-		"subscriptions"
+		"real-time"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Makay11/SeamlessRPC.git"
+	},
 	"license": "MPL-2.0",
 	"author": "Diogo Pais",
-	"repository": "github:Makay11/rpc",
-	"engines": {
-		"node": ">=20"
-	},
-	"packageManager": "pnpm@8.15.4",
-	"scripts": {
-		"dev": "tsc -p tsconfig.lib.json --watch",
-		"lint": "eslint . --ext .js,.cjs,.mjs,.ts,.cts,.mts --max-warnings 0",
-		"lint:fix": "pnpm lint --fix",
-		"format": "prettier --write .",
-		"format:check": "prettier --check .",
-		"prebuild": "pnpm lint && pnpm format:check",
-		"build": "rm -rf dist/* && tsc -p tsconfig.lib.json",
-		"postbuild": "publint",
-		"prepublish": "pnpm build",
-		"prepack": "cp ../{LICENSE,README.md} .",
-		"postpack": "rm LICENSE README.md"
-	},
-	"files": [
-		"dist"
-	],
+	"type": "module",
 	"exports": {
 		"./client": {
 			"types": "./dist/client.d.ts",
@@ -42,10 +26,6 @@
 		"./hono": {
 			"types": "./dist/hono.d.ts",
 			"import": "./dist/hono.js"
-		},
-		"./observable": {
-			"types": "./dist/observable.d.ts",
-			"import": "./dist/observable.js"
 		},
 		"./result": {
 			"types": "./dist/result.d.ts",
@@ -59,29 +39,88 @@
 			"types": "./dist/vite.d.ts",
 			"import": "./dist/vite.js"
 		},
+		"./vue": {
+			"types": "./dist/vue.d.ts",
+			"import": "./dist/vue.js"
+		},
 		"./zod": {
 			"types": "./dist/zod.d.ts",
 			"import": "./dist/zod.js"
 		}
 	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"dev": "tsc -p tsconfig.lib.json --watch",
+		"validate": "pnpm type-check && pnpm lint && pnpm test && knip && pnpm format:check",
+		"type-check": "tsc -p tsconfig.test.json",
+		"type-check:watch": "pnpm type-check --watch",
+		"lint": "eslint --max-warnings=0",
+		"lint:fix": "pnpm lint --fix",
+		"test": "node --test --experimental-test-coverage --experimental-test-module-mocks --experimental-strip-types --disable-warning=ExperimentalWarning",
+		"test:watch": "node --test --watch --experimental-test-module-mocks --experimental-strip-types --disable-warning=ExperimentalWarning",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"build": "rm -rf dist/* && tsc -p tsconfig.lib.json",
+		"postbuild": "pnpm validate && publint",
+		"prepublish": "pnpm build"
+	},
 	"dependencies": {
-		"eventsource-parser": "^1.1.2",
-		"glob": "^10.3.10",
-		"hono": "^4.1.4",
-		"vite": "^5.2.6",
-		"zod": "^3.22.4"
+		"eventsource-parser": "^3.0.0",
+		"tinyglobby": "^0.2.10",
+		"type-fest": "^4.32.0"
 	},
 	"devDependencies": {
-		"@tsconfig/node20": "^20.1.4",
+		"@eslint/js": "^9.18.0",
+		"@stylistic/eslint-plugin": "^2.13.0",
+		"@tsconfig/node22": "^22.0.0",
 		"@tsconfig/strictest": "^2.0.5",
-		"@types/node": "^20.11.30",
-		"@typescript-eslint/eslint-plugin": "^7.4.0",
-		"@typescript-eslint/parser": "^7.4.0",
-		"eslint": "^8.57.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-simple-import-sort": "^12.0.0",
-		"prettier": "3.2.5",
-		"publint": "^0.2.7",
-		"typescript": "~5.4.3"
+		"@types/node": "^22.10.7",
+		"eslint": "^9.18.0",
+		"eslint-import-resolver-typescript": "^3.7.0",
+		"eslint-plugin-command": "^2.1.0",
+		"eslint-plugin-depend": "^0.12.0",
+		"eslint-plugin-import-x": "^4.6.1",
+		"eslint-plugin-jsonc": "^2.18.2",
+		"eslint-plugin-n": "^17.15.1",
+		"eslint-plugin-package-json": "^0.19.0",
+		"eslint-plugin-regexp": "^2.7.0",
+		"eslint-plugin-simple-import-sort": "^12.1.1",
+		"hono": "^4.6.16",
+		"knip": "^5.42.1",
+		"prettier": "^3.4.2",
+		"publint": "^0.3.2",
+		"typescript": "~5.7.3",
+		"typescript-eslint": "^8.20.0",
+		"vite": "^6.0.7",
+		"vue": "^3.5.13",
+		"zod": "^3.24.1"
+	},
+	"peerDependencies": {
+		"hono": "^4.6.14",
+		"vite": "^6.0.3",
+		"vue": "^3.5.13",
+		"zod": "^3.24.1"
+	},
+	"peerDependenciesMeta": {
+		"hono": {
+			"optional": true
+		},
+		"vue": {
+			"optional": true
+		},
+		"zod": {
+			"optional": true
+		}
+	},
+	"packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a",
+	"engines": {
+		"node": ">=22"
+	},
+	"pnpm": {
+		"overrides": {
+			"is-core-module": "npm:@nolyfill/is-core-module@^1"
+		}
 	}
 }

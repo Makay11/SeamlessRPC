@@ -1,7 +1,7 @@
 import EventEmitter from "node:events"
 
-import { Observable } from "@makay/rpc/observable"
-import { z, zv } from "@makay/rpc/zod"
+import { eventStream } from "seamlessrpc/server"
+import { z, zv } from "seamlessrpc/zod"
 
 import {
 	login as _login,
@@ -25,8 +25,6 @@ export async function login(username: string) {
 
 export async function logout() {
 	_logout()
-
-	return true
 }
 
 export type Message = {
@@ -43,7 +41,7 @@ export async function getMessages() {
 	return messages
 }
 
-const ee = new EventEmitter<{
+const events = new EventEmitter<{
 	MESSAGE_CREATED: [message: Message]
 }>()
 
@@ -63,19 +61,21 @@ export async function createMessage(text: Text) {
 
 	messages.push(message)
 
-	ee.emit("MESSAGE_CREATED", message)
+	events.emit("MESSAGE_CREATED", message)
 
 	return message
 }
 
 export async function useMessageCreatedEvents() {
-	await useUserOrThrow()
+	const user = await useUserOrThrow()
 
-	return new Observable<Message>((emit) => {
-		ee.on("MESSAGE_CREATED", emit)
+	return eventStream<Message>(({ enqueue }) => {
+		console.log(`User "${user.username}" subscribed`)
+		events.on("MESSAGE_CREATED", enqueue)
 
 		return () => {
-			ee.off("MESSAGE_CREATED", emit)
+			console.log(`User "${user.username}" unsubscribed`)
+			events.off("MESSAGE_CREATED", enqueue)
 		}
 	})
 }

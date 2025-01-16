@@ -1,22 +1,24 @@
 import type { Context } from "hono"
 import { streamSSE } from "hono/streaming"
-import type { MiddlewareHandler } from "hono/types"
+import type { JsonValue, Promisable } from "type-fest"
 
-import { Observable } from "./observable.js"
 import {
 	createRpc as _createRpc,
 	defineState,
-	ForbiddenError,
+	getHttpStatusCode,
+	InvalidRequestBodyError,
 	type Options as RpcOptions,
-	UnauthorizedError,
-	ValidationError,
-} from "./server.js"
+	RpcError,
+	runWithAsyncState,
+} from "./server.ts"
 
-export type MaybePromise<T> = T | Promise<T>
+export type OnRequest = (ctx: Context) => Promisable<void>
+export type OnError = (ctx: Context, error: unknown) => Promisable<Response>
 
-export type Options = RpcOptions & {
-	onRequest?: (ctx: Context) => MaybePromise<void>
-	onError?: (ctx: Context, error: unknown) => MaybePromise<Response>
+export type Options = {
+	onRequest?: OnRequest | undefined
+	onError?: OnError | undefined
+	files?: RpcOptions | undefined
 }
 
 const { createState: createContext, useStateOrThrow: useContext } =
@@ -24,70 +26,83 @@ const { createState: createContext, useStateOrThrow: useContext } =
 
 export { useContext }
 
-export async function createRpc({
-	onRequest,
-	onError,
-	...options
-}: Options = {}): Promise<MiddlewareHandler> {
-	const rpc = await _createRpc(options)
+export async function createRpc({ onRequest, onError, files }: Options = {}) {
+	const rpc = await _createRpc(files)
 
-	return async (ctx) => {
-		// this forces a new async context to be created before
-		// we call `createContext` to avoid context collisions
-		await Promise.resolve()
+	return async (ctx: Context, procedureId: string) =>
+		runWithAsyncState(async () => {
+			try {
+				createContext(ctx)
 
-		createContext(ctx)
+				if (onRequest != null) {
+					await onRequest(ctx)
+				}
 
-		if (onRequest != null) {
-			await onRequest(ctx)
-		}
+				let args
 
-		const body: unknown = await ctx.req.json()
+				try {
+					args = await ctx.req.json<JsonValue>()
+				} catch {
+					throw new InvalidRequestBodyError()
+				}
 
-		try {
-			const result = await rpc(body)
+				if (!Array.isArray(args)) {
+					throw new InvalidRequestBodyError()
+				}
 
-			if (result instanceof Observable) {
-				return streamSSE(ctx, async (stream) => {
-					await stream.writeSSE({
-						event: "open",
-						data: "",
-					})
+				const result = await rpc(procedureId, args)
 
-					const unsubscribe = result.subscribe((event: unknown) => {
-						stream
-							.writeSSE({
-								data: JSON.stringify(event),
+				if (result === undefined) {
+					ctx.status(204)
+					return ctx.body(null)
+				}
+
+				if (result instanceof ReadableStream) {
+					return streamSSE(
+						ctx,
+						async (stream) => {
+							const reader = result.getReader()
+
+							stream.onAbort(async () => reader.cancel())
+
+							await stream.writeSSE({
+								event: "connected",
+								data: "",
 							})
-							.catch((error: unknown) => {
-								console.error(error)
-							})
-					})
 
-					stream.onAbort(unsubscribe)
-				})
+							try {
+								for (;;) {
+									const { done, value } = await reader.read()
+
+									if (done) break
+
+									await stream.writeSSE({
+										data: JSON.stringify(value),
+									})
+								}
+							} finally {
+								reader.releaseLock()
+							}
+						},
+						async () => {
+							// empty error handler to make Hono send the error to the client
+							// also suppresses the default logging of the error
+						},
+					)
+				}
+
+				// @ts-expect-error Type instantiation is excessively deep and possibly infinite.
+				return ctx.json(result)
+			} catch (error) {
+				if (onError != null) {
+					return onError(ctx, error)
+				}
+
+				if (error instanceof RpcError) {
+					return ctx.json(error, getHttpStatusCode(error))
+				}
+
+				throw error
 			}
-
-			return ctx.json(result)
-		} catch (error) {
-			if (onError != null) {
-				return await onError(ctx, error)
-			}
-
-			if (error instanceof ValidationError) {
-				// cast to unknown to avoid TS error "Type instantiation is excessively deep and possibly infinite."
-				return ctx.json(error as unknown, 400)
-			}
-
-			if (error instanceof UnauthorizedError) {
-				return ctx.json(error, 401)
-			}
-
-			if (error instanceof ForbiddenError) {
-				return ctx.json(error, 403)
-			}
-
-			throw error
-		}
-	}
+		})
 }

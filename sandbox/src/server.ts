@@ -1,16 +1,29 @@
 import { serve } from "@hono/node-server"
-import { createRpc } from "@makay/rpc/hono"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
+import { createRpc } from "seamlessrpc/hono"
 
 const app = new Hono()
 
 app.use(
-	"/rpc",
-	cors({ origin: "http://localhost:5173", credentials: true }),
-	await createRpc()
+	cors({
+		origin: "http://localhost:5173",
+		credentials: true,
+	})
 )
 
-serve(app, (info) => {
-	console.log(`Server is running on http://localhost:${info.port}`)
+const rpc = await createRpc()
+
+app.post("/rpc/:id{.+}", (ctx) => {
+	return rpc(ctx, ctx.req.param("id"))
 })
+
+serve(
+	{
+		fetch: app.fetch,
+		port: 3000,
+	},
+	(info) => {
+		console.log(`Server is running on http://localhost:${info.port}`)
+	}
+)

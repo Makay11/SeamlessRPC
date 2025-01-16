@@ -10,29 +10,24 @@
 		"dev:server": "tsx watch src/server.ts"
 	},
 	"dependencies": {
-		"@hono/node-server": "^1.9.0",
-		"@makay/rpc": "link:../lib",
-		"@vueuse/core": "^10.9.0",
-		"hono": "^4.1.4",
-		"tsx": "^4.7.1",
-		"vue": "^3.4.21"
+		"@hono/node-server": "^1.13.7",
+		"@vueuse/core": "^12.4.0",
+		"hono": "^4.6.16",
+		"seamlessrpc": "link:../lib",
+		"tsx": "^4.19.2",
+		"vue": "^3.5.13",
+		"zod": "^3.24.1"
 	},
 	"devDependencies": {
-		"@rushstack/eslint-patch": "^1.9.0",
-		"@tsconfig/node20": "^20.1.4",
+		"@tsconfig/node22": "^22.0.0",
 		"@tsconfig/strictest": "^2.0.5",
-		"@types/node": "^20.11.30",
-		"@vitejs/plugin-vue": "^5.0.4",
-		"@vue/eslint-config-typescript": "^13.0.0",
-		"@vue/tsconfig": "^0.5.1",
-		"eslint": "^8.57.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-simple-import-sort": "^12.0.0",
-		"eslint-plugin-vue": "^9.24.0",
-		"npm-run-all2": "^6.1.2",
-		"typescript": "~5.4.3",
-		"vite": "^5.2.6",
-		"vite-plugin-inspect": "^0.8.3",
-		"vue-tsc": "^2.0.7"
-	}
+		"@types/node": "^22.10.5",
+		"@vitejs/plugin-vue": "^5.2.1",
+		"@vue/tsconfig": "^0.7.0",
+		"typescript": "~5.7.3",
+		"vite": "^6.0.7",
+		"vite-plugin-inspect": "^10.0.6",
+		"vue-tsc": "^2.2.0"
+	},
+	"packageManager": "pnpm@9.15.3+sha512.1f79bc245a66eb0b07c5d4d83131240774642caaa86ef7d0434ab47c0d16f66b04e21e0c086eb61e62c77efc4d7f7ec071afad3796af64892fae66509173893a"
 }

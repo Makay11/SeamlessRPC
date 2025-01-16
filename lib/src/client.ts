@@ -1,85 +1,87 @@
 import { EventSourceParserStream } from "eventsource-parser/stream"
+import type { JsonValue } from "type-fest"
 
-import { Observable } from "./observable.js"
+import { eventStream } from "./shared/eventStream.ts"
 
-declare const __MAKAY_RPC_SSE__: boolean
-
-export type Config = {
-	url: string
-	credentials: RequestCredentials
-}
-
-export const config: Config = {
-	url: "/rpc",
-	credentials: "same-origin",
-}
+declare const $SEAMLESSRPC_URL: string
+declare const $SEAMLESSRPC_CREDENTIALS: RequestCredentials
+declare const $SEAMLESSRPC_SSE: boolean
 
 export class RpcClientError extends Error {
-	response: Response
+	public response
 
 	constructor(response: Response) {
 		super(response.statusText)
-
 		this.response = response
 	}
 }
 
-export function rpc(proc: string) {
-	return async (...args: unknown[]) => {
-		const response = await fetch(config.url, {
+export function rpc(procedureId: string) {
+	return async (...args: Array<JsonValue>) => {
+		const abortController = new AbortController()
+
+		const response = await fetch(`${$SEAMLESSRPC_URL}/${procedureId}`, {
 			method: "POST",
-			credentials: config.credentials,
+			credentials: $SEAMLESSRPC_CREDENTIALS,
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify([proc, ...args]),
+			body: JSON.stringify(args),
+			signal: abortController.signal,
 		})
 
 		if (!response.ok) {
 			throw new RpcClientError(response)
 		}
 
+		if (response.status === 204) {
+			return
+		}
+
 		if (response.headers.get("Content-Type") === "text/event-stream") {
-			if (!__MAKAY_RPC_SSE__) {
+			if (!$SEAMLESSRPC_SSE) {
 				throw new Error("SSE support is not enabled.")
 			}
 
-			return new Observable((emit) => {
-				const abortController = new AbortController()
+			function abort() {
+				abortController.abort()
+			}
 
+			window.addEventListener("beforeunload", abort)
+
+			return eventStream(({ enqueue, close, error }) => {
 				response
 					.body!.pipeThrough(new TextDecoderStream())
 					.pipeThrough(new EventSourceParserStream())
 					.pipeTo(
 						new WritableStream({
-							write({ event, data }) {
-								if (event === "open") return
+							write(message) {
+								if (message.event === "connected") return
 
-								emit(JSON.parse(data))
+								if (message.event === "error") {
+									error(new Error(message.data))
+									return
+								}
+
+								enqueue(JSON.parse(message.data) as JsonValue)
 							},
+							close,
 						}),
-						{ signal: abortController.signal },
 					)
-					.catch((error: unknown) => {
-						if (error instanceof DOMException && error.name === "AbortError")
-							return
+					.catch((e: unknown) => {
+						/* node:coverage ignore next */
+						if (e instanceof DOMException && e.name === "AbortError") return
 
-						console.error(error)
+						error(e as Error)
 					})
 
-				function abort() {
-					abortController.abort()
-				}
-
-				window.addEventListener("beforeunload", abort)
-
 				return () => {
-					abortController.abort()
+					abort()
 					window.removeEventListener("beforeunload", abort)
 				}
 			})
 		}
 
-		return response.json()
+		return response.json() as Promise<JsonValue>
 	}
 }

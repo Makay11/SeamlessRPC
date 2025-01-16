@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useAsyncState } from "@vueuse/core"
-import { onBeforeUnmount, ref, watchEffect } from "vue"
+import { useAsyncState, whenever } from "@vueuse/core"
+import { useSubscription } from "seamlessrpc/vue"
+import { reactive, ref } from "vue"
 
 import {
 	createMessage,
@@ -30,29 +31,31 @@ const {
 	execute: fetchMessages,
 } = useAsyncState(getMessages, [], {
 	immediate: false,
+	resetOnExecute: false,
 	shallow: false,
 })
 
-let unsubscribe: (() => void) | undefined
-
-onBeforeUnmount(() => {
-	unsubscribe?.()
-})
-
-watchEffect(async () => {
-	if (user.value == null) {
-		unsubscribe?.()
-		return
-	}
-
-	await fetchMessages()
-
-	const messageCreatedEvents = await useMessageCreatedEvents()
-
-	unsubscribe = messageCreatedEvents.subscribe((message) => {
-		messages.value.push(message)
+const messagesSubscription = reactive(
+	useSubscription({
+		source: useMessageCreatedEvents,
+		onData(data) {
+			messages.value.push(data)
+		},
 	})
-})
+)
+
+whenever(
+	() => user.value != null,
+	async (_user, _, onCleanup) => {
+		await fetchMessages()
+
+		await messagesSubscription.subscribe()
+
+		onCleanup(() => {
+			messagesSubscription.unsubscribe().catch(console.error)
+		})
+	}
+)
 
 const newMessageText = ref("")
 
@@ -89,30 +92,31 @@ async function sendMessage() {
 
 		<button @click="logout()">Logout</button>
 
+		<ul>
+			<li
+				v-for="message in messages"
+				:key="message.id"
+			>
+				{{ message.text }}
+			</li>
+		</ul>
+
+		<form @submit.prevent="sendMessage()">
+			<label>
+				New message
+
+				<input
+					v-model="newMessageText"
+					type="text"
+				/>
+
+				<button type="submit">Send</button>
+			</label>
+		</form>
+
 		<div v-if="isLoadingMessages">Loading messages...</div>
-
-		<template v-else>
-			<ul>
-				<li
-					v-for="message in messages"
-					:key="message.id"
-				>
-					{{ message.text }}
-				</li>
-			</ul>
-
-			<form @submit.prevent="sendMessage()">
-				<label>
-					New message
-
-					<input
-						v-model="newMessageText"
-						type="text"
-					/>
-
-					<button type="submit">Send</button>
-				</label>
-			</form>
-		</template>
 	</template>
+
+	<div v-if="messagesSubscription.isSubscribing">Subscribing...</div>
+	<div v-if="messagesSubscription.isSubscribed">Subscribed</div>
 </template>

@@ -1,59 +1,67 @@
-import { relative } from "node:path"
+import { relative, resolve } from "node:path"
+
+import { createFilter, parseAstAsync, type Plugin } from "vite"
 
 import {
-	createFilter,
-	parseAstAsync,
-	type PluginOption,
-	ResolvedConfig,
-} from "vite"
-
-import { shortHash } from "./_shared.js"
+	DEFAULT_EXCLUDE,
+	DEFAULT_INCLUDE,
+	DEFAULT_ROOT_DIR,
+} from "./shared/defaults.ts"
+import { getHashedProcedureId, getProcedureId } from "./shared/procedureId.ts"
 
 export type Options = {
-	include?: string | string[]
-	exclude?: string | string[]
-	hashProcedures?: boolean
-	sse?: boolean
+	url?: string | undefined
+	credentials?: RequestCredentials | undefined
+	sse?: boolean | undefined
+	rootDir?: string | undefined
+	include?: string | Array<string> | undefined
+	exclude?: string | Array<string> | undefined
+	hashPaths?: boolean | undefined
 }
 
+type CreateExport = (id: string, name: string) => string
+
 export function rpc({
-	include = "src/**/*.server.{js,ts}",
-	exclude,
-	hashProcedures,
+	url = "/rpc",
+	credentials = "same-origin",
 	sse = false,
-}: Options = {}): PluginOption {
-	const filter = createFilter(include, exclude)
+	rootDir = DEFAULT_ROOT_DIR,
+	include = DEFAULT_INCLUDE,
+	exclude = DEFAULT_EXCLUDE,
+	hashPaths,
+}: Options = {}) {
+	let filter: (id: string) => boolean
 
-	let config: ResolvedConfig
+	const _import = 'import { rpc } from "seamlessrpc/client"'
 
-	const _import = 'import { rpc } from "@makay/rpc/client"'
-
-	let createExport: (path: string, name: string) => string
+	let createExport: CreateExport
 
 	return {
-		name: "@makay/rpc",
+		name: "seamlessrpc",
 
 		config(config) {
-			if (config.define == null) {
-				config.define = {
-					__MAKAY_RPC_SSE__: sse,
-				}
-			} else {
-				config.define["__MAKAY_RPC_SSE__"] = sse
+			config.define = {
+				...config.define,
+				$SEAMLESSRPC_URL: JSON.stringify(url),
+				$SEAMLESSRPC_CREDENTIALS: JSON.stringify(credentials),
+				$SEAMLESSRPC_SSE: JSON.stringify(sse),
 			}
 		},
 
-		configResolved(_config) {
-			config = _config
+		configResolved(config) {
+			const rootPath = resolve(config.root, rootDir)
 
-			createExport =
-				hashProcedures ?? config.mode === "production"
-					? (path, name) =>
-							`export const ${name} = rpc("${shortHash(`${path}:${name}`)}")`
-					: (path, name) => `export const ${name} = rpc("${path}:${name}")`
+			filter = createFilter(include, exclude, {
+				resolve: rootPath,
+			})
+
+			createExport = createExportFactory(
+				rootPath,
+				hashPaths ?? config.mode === "production",
+			)
 		},
 
-		async transform(code, id) {
+		async transform(this: unknown, code, id) {
 			if (!filter(id)) return
 
 			const program = await parseAstAsync(code)
@@ -72,7 +80,8 @@ export function rpc({
 				if (node.type === "ExportNamedDeclaration") {
 					if (
 						node.declaration?.type !== "FunctionDeclaration" ||
-						node.declaration.async !== true
+						node.declaration.async !== true ||
+						node.declaration.generator === true
 					) {
 						throw new Error(`All exports must be local plain async functions.`)
 					}
@@ -85,15 +94,26 @@ export function rpc({
 				return "export {}"
 			}
 
-			const exports: string[] = []
-
-			const path = relative(config.root, id)
+			const exports: Array<string> = []
 
 			for (const procedure of procedures) {
-				exports.push(createExport(path, procedure))
+				exports.push(createExport(id, procedure))
 			}
 
 			return `${_import}\n${exports.join("\n")}\n`
 		},
+	} as const satisfies Plugin
+}
+
+function createExportFactory(
+	rootPath: string,
+	hashPaths: boolean,
+): CreateExport {
+	const transformer = hashPaths ? getHashedProcedureId : getProcedureId
+
+	return (id, name) => {
+		const path = relative(rootPath, id)
+
+		return `export const ${name} = rpc("${transformer(path, name)}")`
 	}
 }

@@ -1,16 +1,14 @@
 {
-	"extends": [
-		"@tsconfig/node20/tsconfig.json",
-		"@tsconfig/strictest/tsconfig.json"
-	],
-
-	"include": ["src/**/*.ts"],
+	"extends": ["./tsconfig.base.json"],
 
 	"compilerOptions": {
+		"lib": ["ES2023", "DOM"],
 		"declaration": true,
 		"declarationMap": true,
-		"outDir": "dist",
+		"noEmit": false,
+		"outDir": "dist"
+	},
 
-		"lib": ["DOM"]
-	}
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts"]
 }

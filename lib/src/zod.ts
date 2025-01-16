@@ -1,6 +1,6 @@
-import { z } from "zod"
+import type { z } from "zod"
 
-import { ValidationError } from "./server.js"
+import { ValidationError } from "./server.ts"
 
 export * from "zod"
 
