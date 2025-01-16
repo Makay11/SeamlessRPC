@@ -382,7 +382,75 @@ Take a look at [lib/src/result.ts](https://github.com/Makay11/SeamlessRPC/blob/m
 
 ## 📡 Subscriptions
 
-WIP
+Subscriptions allow clients to receive real-time updates from the server via [server-sent events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
+
+Client support needs to be explicitly enabled because it increases the client bundle size by a small amount.
+
+```typescript
+// vite.config.ts
+import { rpc } from "seamlessrpc/vite"
+
+export default defineConfig({
+  plugins: [
+    rpc({
+      sse: true,
+    }),
+  ],
+})
+```
+
+Then you can just return a [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) from your exposed server functions. These functions can still receive inputs and throw errors as usual. For convenience, SeamlessRPC provides a helper function `eventStream` that makes it easier to set up and clean up an event stream.
+
+```typescript
+// src/components/OnlineChat.server.ts
+import { EventEmitter } from "node:events"
+
+import { eventStream } from "seamlessrpc/server"
+
+export type Message = {
+  id: string
+  topic: string
+  text: string
+}
+
+// example event source
+const events = new EventEmitter<{
+  MESSAGE_CREATED: [message: Message]
+}>()
+
+setInterval(() => {
+  events.emit("MESSAGE_CREATED", {
+    topic: "general",
+    text: "Hello, world!",
+  })
+}, 1000)
+
+export async function useMessageCreatedEvents(topic: string) {
+  // TODO validate topic
+  // TODO check user auth
+
+  return eventStream<Message>(({ enqueue }) => {
+    console.log(`User subscribed`)
+    events.on("MESSAGE_CREATED", onMessage)
+
+    function onMessage(message: Message) {
+      if (message.topic === topic) {
+        enqueue(message)
+      }
+    }
+
+    // return a cleanup function
+    return () => {
+      console.log(`User unsubscribed`)
+      events.off("MESSAGE_CREATED", onMessage)
+    }
+  })
+}
+```
+
+In your client code you can just read the [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) and handle the events as they come in. If you are using [Vue](https://vuejs.org), SeamlessRPC provides a `useSubscription` helper function; check the [Vue section](#-vue) below.
+
+Take a look at [sandbox/src/components/OnlineChat.vue](https://github.com/Makay11/SeamlessRPC/blob/main/sandbox/src/components/OnlineChat.vue) and [sandbox/src/components/OnlineChat.server.ts](https://github.com/Makay11/SeamlessRPC/blob/main/sandbox/src/components/OnlineChat.server.ts) for a more advanced example.
 
 ## 🔌 Adapters
 
@@ -471,16 +539,15 @@ SeamlessRPC includes a `useSubscription` helper function that makes it easier to
 - `onClose`: an optional callback function that will be called when the subscription is closed
 - `onError`: an optional callback function that will be called if the subscription is closed with an error
 
-```vue
-<!-- src/components/OnlineChat.vue -->
-<script setup lang="ts">
+```typescript
+// script setup (or wrapped in a composable)
 import { useSubscription } from "seamlessrpc/vue"
 
 import { useMessageCreatedEvents } from "./OnlineChat.server"
 
 const { isSubscribed, isSubscribing, subscribe, unsubscribe } = useSubscription(
   {
-    source: useMessageCreatedEvents,
+    source: async () => useMessageCreatedEvents("general"), // topic: "general"
     onData(message) {
       console.log(message)
     },
@@ -500,7 +567,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   unsubscribe().catch(console.error)
 })
-</script>
 ```
 
 Take a look at [sandbox/src/components/OnlineChat.vue](https://github.com/Makay11/SeamlessRPC/blob/main/sandbox/src/components/OnlineChat.vue) for a more advanced example.
