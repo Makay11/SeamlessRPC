@@ -39,13 +39,13 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
 - 📡 Optional [server-sent events](https://en.wikipedia.org/wiki/Server-sent_events) support for real-time [subscriptions](#-subscriptions)
 - 🪶 Extremely small client bundle size addition
 - 🔗 Directly import and call tailored server functions from client code
-- 📄 Colocate server and client files (or don't)
+- 📄 Colocate client and server files (or don't 🤷)
 - 📦 Front-end and back-end framework agnostic
 - 📦 Validation library agnostic
 - 🚫 Low server overhead with no implicit run-time validations
+- 🧰 Includes utilities for [async server state](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/server/state.ts) and [results](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/result.ts)
 - 🪝 Use the [composables](https://vuejs.org/guide/reusability/composables)/[hooks](https://react.dev/reference/react/hooks) pattern in server code
 - 🔌 Includes adapters for popular libraries like [Hono](https://hono.dev/), [Vue](https://vuejs.org/) and [Zod](https://zod.dev/)
-- 🧰 Includes utilities for [async server state](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/server/state.ts) and [results](https://github.com/Makay11/SeamlessRPC/blob/main/lib/src/result.ts)
 
 ## 🔧 Installation and setup
 
