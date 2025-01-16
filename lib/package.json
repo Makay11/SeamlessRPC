@@ -1,6 +1,6 @@
 {
 	"name": "seamlessrpc",
-	"version": "1.0.0-rc.2",
+	"version": "1.0.0",
 	"description": "An RPC library for quick development of seamless full-stack applications.",
 	"keywords": [
 		"vite",
