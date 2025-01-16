@@ -1,6 +1,6 @@
 {
 	"name": "seamlessrpc",
-	"version": "1.0.0-rc.1",
+	"version": "1.0.0-rc.2",
 	"description": "An RPC library for quick development of seamless full-stack applications.",
 	"keywords": [
 		"vite",
@@ -49,8 +49,7 @@
 		}
 	},
 	"files": [
-		"dist",
-		"icons"
+		"dist"
 	],
 	"scripts": {
 		"dev": "tsc -p tsconfig.lib.json --watch",
