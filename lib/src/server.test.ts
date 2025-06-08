@@ -45,11 +45,16 @@ describe("createRpc", () => {
 	it("calls glob", async () => {
 		assert.strictEqual(glob.mock.callCount(), 0)
 
-		await createRpc({
-			rootDir: "/path/to",
-			include: ["a", "b"],
-			exclude: ["c", "d"],
-		})
+		await assert.rejects(
+			createRpc({
+				rootDir: "/path/to",
+				include: ["a", "b"],
+				exclude: ["c", "d"],
+			}),
+			(error: Error) => {
+				return error.message.includes("check createRpc() configuration too")
+			},
+		)
 
 		assert.strictEqual(glob.mock.callCount(), 1)
 
@@ -65,7 +70,9 @@ describe("createRpc", () => {
 	it("calls glob with default options", async () => {
 		assert.strictEqual(glob.mock.callCount(), 0)
 
-		await createRpc()
+		await assert.rejects(createRpc(), (error: Error) => {
+			return error.message.includes("check createRpc() configuration too")
+		})
 
 		assert.strictEqual(glob.mock.callCount(), 1)
 

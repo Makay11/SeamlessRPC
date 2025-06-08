@@ -1,5 +1,6 @@
 /* node:coverage disable */ // coverage seems broken for this file
 
+import assert from "node:assert"
 import { resolve } from "node:path"
 
 import { glob } from "tinyglobby"
@@ -40,6 +41,11 @@ export async function createRpc({
 		patterns: include,
 		ignore: exclude,
 	})
+
+	assert(
+		paths.length > 0,
+		`Be caseful!, createRpc: by pattern(s) "${include.toString()}" founded 0 files. If you provide custom (different) pattern, check createRpc() configuration too.`,
+	)
 
 	await Promise.all(
 		paths.map(async (path) => {
