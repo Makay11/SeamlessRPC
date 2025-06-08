@@ -81,6 +81,7 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
        rpc({
          url: "http://localhost:3000/rpc",
          credentials: "include",
+         include: "**/*.server.{js,ts}"
        }),
      ],
    })

@@ -1,0 +1,10 @@
+{
+	"include": ["**/*.rpc.{js,ts}", "vite.config.*", "src/server.ts"],
+	"compilerOptions": {
+		"composite": true,
+		"target": "esnext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": ["node"]
+	}
+}
