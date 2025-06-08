@@ -81,7 +81,7 @@ Previously known as [@makay/rpc](https://github.com/Makay11/rpc).
        rpc({
          url: "http://localhost:3000/rpc",
          credentials: "include",
-         include: "**/*.server.{js,ts}"
+         include: "**/*.server.{js,ts}",
        }),
      ],
    })
@@ -592,6 +592,31 @@ export async function createTodo(text: Text) {
 ```
 
 Check the [Input validation section](#-input-validation) above for more information.
+
+## 📘 Vite plugin snippet
+
+Autimatically run the parallel process while the Vite dev and preview servers are running.
+
+```typescript
+// vite.config.ts
+
+export default defineConfig({
+  ...
+
+	plugins: [
+     { name: "Run rpc server",
+			configureServer() {
+				spawn("pnpm", ["run", "dev:server"], {
+					stdio: ["ignore", "inherit", "inherit"],
+				})
+			},
+			configurePreviewServer() {
+				spawn("pnpm", ["run", "dev:server"], {
+					stdio: ["ignore", "inherit", "inherit"],
+				})
+			},
+    },
+```
 
 ## 🧑🏻‍💻 Contributing
 
