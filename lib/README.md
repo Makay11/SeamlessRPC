@@ -185,7 +185,7 @@ In a real scenario you would store your data in a database rather than in the se
 
 There is no implicit run-time validation of inputs in the server. In the example above, the function `createTodo` expects a single string argument. However, if your server is exposed publicly, bad actors or misconfigured clients might send something unexpected which can cause undefined behavior in you program.
 
-Therefore, it is ⚠️ **extremely important** ⚠️ that you validate the inputs of all exposed function.
+Therefore, it is ⚠️ **extremely important** ⚠️ that you validate the inputs of all exposed functions.
 
 Here's a basic example using the included [Zod](https://zod.dev/) adapter:
 
