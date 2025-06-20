@@ -6,13 +6,11 @@ import type { EventSourceMessage } from "eventsource-parser/stream"
 import { rpc, RpcClientError } from "./client.ts"
 
 declare global {
-	/* eslint-disable no-var */
 	var $SEAMLESSRPC_URL: string
 	var $SEAMLESSRPC_CREDENTIALS: RequestCredentials
 	var $SEAMLESSRPC_SSE: boolean
 
 	var window: Window & typeof globalThis
-	/* eslint-enable no-var */
 }
 
 describe("RpcClientError", () => {

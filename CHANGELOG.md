@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.2 (2025-06-20)
+
+### 🏡 Chores
+
+- Update dependencies
+
 ## v1.0.1 (2025-06-10)
 
 ### 🏡 Chores
