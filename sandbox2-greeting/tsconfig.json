@@ -1,0 +1,15 @@
+{
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		}
+	],
+	"extends": ["@tsconfig/strictest/tsconfig.json"],
+	"include": ["env.d.ts", "src/**/*"],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	}
+}

@@ -1,7 +1,8 @@
 import { fileURLToPath, URL } from "node:url"
 
-import { rpc } from "seamlessrpc/vite"
 import vue from "@vitejs/plugin-vue"
+import { spawn } from "node:child_process"
+import { rpc } from "seamlessrpc/vite"
 import { defineConfig } from "vite"
 import Inspect from "vite-plugin-inspect"
 
@@ -15,6 +16,20 @@ export default defineConfig({
 			credentials: "include",
 			sse: true,
 		}),
+
+		{
+			name: "Run rpc server",
+			configureServer() {
+				spawn("pnpm", ["run", "dev:server"], {
+					stdio: ["ignore", "inherit", "inherit"],
+				})
+			},
+			configurePreviewServer() {
+				spawn("pnpm", ["run", "dev:server"], {
+					stdio: ["ignore", "inherit", "inherit"],
+				})
+			},
+		},
 
 		Inspect(),
 	],

@@ -4,6 +4,11 @@ import { cors } from "hono/cors"
 import { createRpc } from "seamlessrpc/hono"
 
 const app = new Hono()
+const rpc = await createRpc({
+	files: {
+		include: "**/*.rpc.{ts,js}",
+	},
+})
 
 app.use(
 	cors({
@@ -11,11 +16,9 @@ app.use(
 		credentials: true,
 	})
 )
-
-const rpc = await createRpc()
-
-app.post("/rpc/:id{.+}", (ctx) => {
-	return rpc(ctx, ctx.req.param("id"))
+app.post("/rpc/:id{.+}", async (ctx) => {
+	const x = rpc(ctx, ctx.req.param("id"))
+	return x
 })
 
 serve(
@@ -24,6 +27,6 @@ serve(
 		port: 3000,
 	},
 	(info) => {
-		console.log(`rpc server is running on http://localhost:${info.port}`)
+		console.info(`Server is running on http://localhost:${info.port}`)
 	}
 )
