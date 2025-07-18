@@ -1,6 +1,7 @@
 import assert from "node:assert"
 import { beforeEach, describe, it, mock } from "node:test"
 
+import { fromPartial } from "@total-typescript/shoehorn"
 import type { ResolvedConfig, UserConfig } from "vite"
 import * as vite from "vite"
 
@@ -25,6 +26,10 @@ mock.module("vite", {
 
 const { rpc } = await import("./vite.ts")
 
+const configCtx = fromPartial<vite.ConfigPluginContext>({})
+const configResolvedCtx =
+	fromPartial<vite.MinimalPluginContextWithoutEnvironment>({})
+
 describe("rpc", () => {
 	it("returns a vite plugin", () => {
 		const plugin = rpc()
@@ -37,12 +42,12 @@ describe("rpc", () => {
 
 		const config: UserConfig = {}
 
-		plugin.config(config)
+		plugin.config.call(configCtx, config)
 
 		assert.deepStrictEqual(config.define, {
-			$SEAMLESSRPC_URL: '"/rpc"',
-			$SEAMLESSRPC_CREDENTIALS: '"same-origin"',
-			$SEAMLESSRPC_SSE: "false",
+			__SEAMLESSRPC_URL: '"/rpc"',
+			__SEAMLESSRPC_CREDENTIALS: '"same-origin"',
+			__SEAMLESSRPC_SSE: "false",
 		})
 	})
 
@@ -55,12 +60,12 @@ describe("rpc", () => {
 
 		const config: UserConfig = {}
 
-		plugin.config(config)
+		plugin.config.call(configCtx, config)
 
 		assert.deepStrictEqual(config.define, {
-			$SEAMLESSRPC_URL: '"/rpc/v1"',
-			$SEAMLESSRPC_CREDENTIALS: '"include"',
-			$SEAMLESSRPC_SSE: "true",
+			__SEAMLESSRPC_URL: '"/rpc/v1"',
+			__SEAMLESSRPC_CREDENTIALS: '"include"',
+			__SEAMLESSRPC_SSE: "true",
 		})
 	})
 
@@ -77,13 +82,13 @@ describe("rpc", () => {
 			},
 		}
 
-		plugin.config(config)
+		plugin.config.call(configCtx, config)
 
 		assert.deepStrictEqual(config.define, {
 			foo: '"bar"',
-			$SEAMLESSRPC_URL: '"/rpc/v1"',
-			$SEAMLESSRPC_CREDENTIALS: '"include"',
-			$SEAMLESSRPC_SSE: "true",
+			__SEAMLESSRPC_URL: '"/rpc/v1"',
+			__SEAMLESSRPC_CREDENTIALS: '"include"',
+			__SEAMLESSRPC_SSE: "true",
 		})
 	})
 
@@ -92,7 +97,7 @@ describe("rpc", () => {
 
 		assert.strictEqual(createFilter.mock.callCount(), 0)
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -126,7 +131,7 @@ describe("rpc", () => {
 
 		assert.strictEqual(createFilter.mock.callCount(), 0)
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -149,7 +154,7 @@ describe("rpc", () => {
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -184,7 +189,7 @@ export const hello = rpc("foo.server/hello")
 			exclude: ["**/excluded/**"],
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -209,7 +214,7 @@ export const hello = rpc("foo.server/hello")
 			hashPaths: true,
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -243,7 +248,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "production",
 		} as ResolvedConfig)
@@ -278,7 +283,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 			hashPaths: false,
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "production",
 		} as ResolvedConfig)
@@ -312,7 +317,7 @@ export const hello = rpc("foo.server/hello")
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -334,7 +339,7 @@ export const hello = rpc("foo.server/hello")
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -348,7 +353,7 @@ export const hello = rpc("foo.server/hello")
 
 	it("rejects indirect exports", async () => {
 		const plugin = rpc({ rootDir: "src" })
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -370,7 +375,7 @@ export const hello = rpc("foo.server/hello")
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -387,7 +392,7 @@ export const hello = rpc("foo.server/hello")
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -405,7 +410,7 @@ export const hello = rpc("foo.server/hello")
 
 	it("rejects async generator function exports", async () => {
 		const plugin = rpc({ rootDir: "src" })
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)
@@ -426,7 +431,7 @@ export const hello = rpc("foo.server/hello")
 			rootDir: "src",
 		})
 
-		plugin.configResolved({
+		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
 			mode: "development",
 		} as ResolvedConfig)

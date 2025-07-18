@@ -42,9 +42,9 @@ export function rpc({
 		config(config) {
 			config.define = {
 				...config.define,
-				$SEAMLESSRPC_URL: JSON.stringify(url),
-				$SEAMLESSRPC_CREDENTIALS: JSON.stringify(credentials),
-				$SEAMLESSRPC_SSE: JSON.stringify(sse),
+				__SEAMLESSRPC_URL: JSON.stringify(url),
+				__SEAMLESSRPC_CREDENTIALS: JSON.stringify(credentials),
+				__SEAMLESSRPC_SSE: JSON.stringify(sse),
 			}
 		},
 
