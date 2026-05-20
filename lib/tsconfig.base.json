@@ -1,10 +1,8 @@
 {
-	"extends": [
-		"@tsconfig/bases/node24.tsconfig.json",
-		"@tsconfig/bases/strictest.tsconfig.json"
-	],
+	"extends": ["@tsconfig/bases/node24", "@tsconfig/bases/strictest"],
 
 	"compilerOptions": {
+		"types": ["node"],
 		"allowImportingTsExtensions": true,
 		"rewriteRelativeImportExtensions": true,
 		"noEmit": true,

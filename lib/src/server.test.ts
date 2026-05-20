@@ -10,6 +10,7 @@ import {
 	DEFAULT_ROOT_DIR,
 } from "./shared/defaults.ts"
 
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 const glob = mock.fn<typeof _glob>(async () => Promise.resolve([]))
 
 beforeEach(() => {
@@ -54,9 +55,9 @@ describe("createRpc", () => {
 		assert.strictEqual(glob.mock.callCount(), 1)
 
 		assert.deepStrictEqual(glob.mock.calls[0]!.arguments, [
+			["a", "b"],
 			{
 				cwd: "/path/to",
-				patterns: ["a", "b"],
 				ignore: ["c", "d"],
 			},
 		])
@@ -70,9 +71,9 @@ describe("createRpc", () => {
 		assert.strictEqual(glob.mock.callCount(), 1)
 
 		assert.deepStrictEqual(glob.mock.calls[0]!.arguments, [
+			DEFAULT_INCLUDE,
 			{
 				cwd: DEFAULT_ROOT_DIR,
-				patterns: DEFAULT_INCLUDE,
 				ignore: DEFAULT_EXCLUDE,
 			},
 		])

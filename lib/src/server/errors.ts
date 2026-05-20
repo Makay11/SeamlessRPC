@@ -45,8 +45,8 @@ export class ProcedureNotFoundError extends RpcError {
 
 export function getHttpStatusCode(error: RpcError) {
 	if (
-		error instanceof InvalidRequestBodyError ||
-		error instanceof ValidationError
+		error instanceof InvalidRequestBodyError
+		|| error instanceof ValidationError
 	) {
 		return 400
 	}

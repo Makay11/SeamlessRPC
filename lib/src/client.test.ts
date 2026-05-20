@@ -172,9 +172,9 @@ describe("rpc", () => {
 		function enqueueMessage({ event, data }: EventSourceMessage) {
 			responseStreamController.enqueue(
 				encoder.encode(
-					event == null
-						? `data:${JSON.stringify(data)}\n\n`
-						: `event:${event}\ndata:${JSON.stringify(data)}\n\n`,
+					event == null ?
+						`data:${JSON.stringify(data)}\n\n`
+					:	`event:${event}\ndata:${JSON.stringify(data)}\n\n`,
 				),
 			)
 		}

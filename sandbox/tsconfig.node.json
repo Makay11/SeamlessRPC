@@ -1,8 +1,5 @@
 {
-	"extends": [
-		"@tsconfig/bases/node24.tsconfig.json",
-		"@tsconfig/bases/strictest.tsconfig.json"
-	],
+	"extends": ["@tsconfig/bases/node24", "@tsconfig/bases/strictest"],
 	"include": [
 		"vite.config.*",
 		"vitest.config.*",

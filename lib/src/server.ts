@@ -35,9 +35,8 @@ export async function createRpc({
 }: Options = {}) {
 	const proceduresMap = new Map<string, Procedure>()
 
-	const paths = await glob({
+	const paths = await glob(include, {
 		cwd: rootDir,
-		patterns: include,
 		ignore: exclude,
 	})
 
