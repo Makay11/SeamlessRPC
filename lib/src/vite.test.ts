@@ -149,7 +149,7 @@ describe("rpc", () => {
 		])
 	})
 
-	it("transforms a file", async () => {
+	it("transforms a file", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -169,10 +169,7 @@ describe("rpc", () => {
 			}
 		`
 
-		const transformedCode = await plugin.transform(
-			code,
-			"/root/src/foo.server.ts",
-		)
+		const transformedCode = plugin.transform(code, "/root/src/foo.server.ts")
 
 		assert.strictEqual(
 			transformedCode,
@@ -183,7 +180,7 @@ export const hello = rpc("foo.server/hello")
 		)
 	})
 
-	it("does not transform filtered out files", async () => {
+	it("does not transform filtered out files", () => {
 		const plugin = rpc({
 			rootDir: "src",
 			exclude: ["**/excluded/**"],
@@ -200,7 +197,7 @@ export const hello = rpc("foo.server/hello")
 			}
 		`
 
-		const transformedCode = await plugin.transform(
+		const transformedCode = plugin.transform(
 			code,
 			"/root/src/excluded/foo.server.ts",
 		)
@@ -208,7 +205,7 @@ export const hello = rpc("foo.server/hello")
 		assert.strictEqual(transformedCode, undefined)
 	})
 
-	it("transforms a file with hashed paths when hashPaths is true", async () => {
+	it("transforms a file with hashed paths when hashPaths is true", () => {
 		const plugin = rpc({
 			rootDir: "src",
 			hashPaths: true,
@@ -229,10 +226,7 @@ export const hello = rpc("foo.server/hello")
 			}
 		`
 
-		const transformedCode = await plugin.transform(
-			code,
-			"/root/src/foo.server.ts",
-		)
+		const transformedCode = plugin.transform(code, "/root/src/foo.server.ts")
 
 		assert.strictEqual(
 			transformedCode,
@@ -243,7 +237,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 		)
 	})
 
-	it("transforms a file with hashed paths when hashPaths is undefined and config.mode is production", async () => {
+	it("transforms a file with hashed paths when hashPaths is undefined and config.mode is production", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -263,10 +257,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 			}
 		`
 
-		const transformedCode = await plugin.transform(
-			code,
-			"/root/src/foo.server.ts",
-		)
+		const transformedCode = plugin.transform(code, "/root/src/foo.server.ts")
 
 		assert.strictEqual(
 			transformedCode,
@@ -277,7 +268,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 		)
 	})
 
-	it("transforms a file without hashed paths when hashPaths is false and config.mode is production", async () => {
+	it("transforms a file without hashed paths when hashPaths is false and config.mode is production", () => {
 		const plugin = rpc({
 			rootDir: "src",
 			hashPaths: false,
@@ -298,10 +289,7 @@ export const hello = rpc("-5KgEd_NKIC7DUMm/hello")
 			}
 		`
 
-		const transformedCode = await plugin.transform(
-			code,
-			"/root/src/foo.server.ts",
-		)
+		const transformedCode = plugin.transform(code, "/root/src/foo.server.ts")
 
 		assert.strictEqual(
 			transformedCode,
@@ -312,7 +300,7 @@ export const hello = rpc("foo.server/hello")
 		)
 	})
 
-	it("rejects default exports", async () => {
+	it("rejects default exports", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -328,13 +316,12 @@ export const hello = rpc("foo.server/hello")
 		}
 	`
 
-		await assert.rejects(
-			plugin.transform(code, "/root/src/foo.server.ts"),
-			new Error("Default exports are not allowed."),
-		)
+		assert.throws(() => plugin.transform(code, "/root/src/foo.server.ts"), {
+			message: "Default exports are not allowed.",
+		})
 	})
 
-	it("rejects export all declarations", async () => {
+	it("rejects export all declarations", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -346,12 +333,12 @@ export const hello = rpc("foo.server/hello")
 
 		const code = `export * from "./other"`
 
-		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+		assert.throws(() => plugin.transform(code, "/root/src/foo.server.ts"), {
 			message: "All exports must be local plain async functions.",
 		})
 	})
 
-	it("rejects indirect exports", async () => {
+	it("rejects indirect exports", () => {
 		const plugin = rpc({ rootDir: "src" })
 		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
@@ -365,12 +352,12 @@ export const hello = rpc("foo.server/hello")
 		export { foo }
 	`
 
-		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+		assert.throws(() => plugin.transform(code, "/root/src/foo.server.ts"), {
 			message: "All exports must be local plain async functions.",
 		})
 	})
 
-	it("rejects non-function named exports", async () => {
+	it("rejects non-function named exports", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -382,12 +369,12 @@ export const hello = rpc("foo.server/hello")
 
 		const code = `export const foo = "bar"`
 
-		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+		assert.throws(() => plugin.transform(code, "/root/src/foo.server.ts"), {
 			message: "All exports must be local plain async functions.",
 		})
 	})
 
-	it("rejects non-async function exports", async () => {
+	it("rejects non-async function exports", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -403,12 +390,12 @@ export const hello = rpc("foo.server/hello")
 		}
 	`
 
-		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+		assert.throws(() => plugin.transform(code, "/root/src/foo.server.ts"), {
 			message: "All exports must be local plain async functions.",
 		})
 	})
 
-	it("rejects async generator function exports", async () => {
+	it("rejects async generator function exports", () => {
 		const plugin = rpc({ rootDir: "src" })
 		plugin.configResolved.call(configResolvedCtx, {
 			root: "/root",
@@ -421,12 +408,12 @@ export const hello = rpc("foo.server/hello")
 		}
 	`
 
-		await assert.rejects(plugin.transform(code, "/root/src/foo.server.ts"), {
+		assert.throws(() => plugin.transform(code, "/root/src/foo.server.ts"), {
 			message: "All exports must be local plain async functions.",
 		})
 	})
 
-	it("transforms a file with no procedures", async () => {
+	it("transforms a file with no procedures", () => {
 		const plugin = rpc({
 			rootDir: "src",
 		})
@@ -438,10 +425,7 @@ export const hello = rpc("foo.server/hello")
 
 		const code = ``
 
-		const transformedCode = await plugin.transform(
-			code,
-			"/root/src/foo.server.ts",
-		)
+		const transformedCode = plugin.transform(code, "/root/src/foo.server.ts")
 
 		assert.strictEqual(transformedCode, `export {}`)
 	})

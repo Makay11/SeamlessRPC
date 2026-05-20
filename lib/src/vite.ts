@@ -1,6 +1,6 @@
 import { relative, resolve } from "node:path"
 
-import { createFilter, parseAstAsync, type Plugin } from "vite"
+import { createFilter, parseSync, type Plugin } from "vite"
 
 import {
 	DEFAULT_EXCLUDE,
@@ -61,10 +61,10 @@ export function rpc({
 			)
 		},
 
-		async transform(this: unknown, code, id) {
+		transform(this: unknown, code, id) {
 			if (!filter(id)) return
 
-			const program = await parseAstAsync(code)
+			const { program } = parseSync(id, code)
 
 			const procedures = new Set<string>()
 
@@ -80,13 +80,13 @@ export function rpc({
 				if (node.type === "ExportNamedDeclaration") {
 					if (
 						node.declaration?.type !== "FunctionDeclaration"
-						|| node.declaration.async !== true
-						|| node.declaration.generator === true
+						|| !node.declaration.async
+						|| node.declaration.generator
 					) {
 						throw new Error(`All exports must be local plain async functions.`)
 					}
 
-					procedures.add(node.declaration.id.name)
+					procedures.add(node.declaration.id!.name)
 				}
 			}
 
