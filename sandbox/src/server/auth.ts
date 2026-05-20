@@ -4,7 +4,7 @@ import { z } from "seamlessrpc/zod"
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie"
 
 export const UserSchema = z.object({
-	id: z.string().uuid(),
+	id: z.uuid(),
 	username: z.string().min(1).max(32),
 })
 
