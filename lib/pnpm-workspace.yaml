@@ -1,0 +1,4 @@
+allowBuilds:
+  esbuild: true
+  oxc-resolver: true
+  unrs-resolver: true

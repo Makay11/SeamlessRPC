@@ -1,7 +1,7 @@
 {
 	"extends": [
-		"@tsconfig/node22/tsconfig.json",
-		"@tsconfig/strictest/tsconfig.json"
+		"@tsconfig/bases/node24.tsconfig.json",
+		"@tsconfig/bases/strictest.tsconfig.json"
 	],
 	"include": [
 		"vite.config.*",

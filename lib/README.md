@@ -281,7 +281,7 @@ However, it also allows you to provide a custom error handler to handle errors i
 
 ## 📦 Async server state
 
-SeamlessRPC provides a way to store temporary server state tied to a request. The state is stored within the server process using [AsyncLocalStorage](https://nodejs.org/docs/latest-v22.x/api/async_context.html#class-asynclocalstorage).
+SeamlessRPC provides a way to store temporary server state tied to a request. The state is stored within the server process using [AsyncLocalStorage](https://nodejs.org/docs/latest-v24.x/api/async_context.html#class-asynclocalstorage).
 
 The state can be accessed from any function in a way that resembles the [composables](https://vuejs.org/guide/reusability/composables)/[hooks](https://react.dev/reference/react/hooks) pattern.
 
